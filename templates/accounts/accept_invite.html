@@ -1,0 +1,7 @@
+﻿<h1>Accept invitation</h1>
+<form method="post">{% csrf_token %}
+<input type="hidden" name="token" value="{{ token }}">
+<p>Set your password:</p>
+<input type="password" name="password" required>
+<button type="submit">Create my staff account</button>
+</form>
