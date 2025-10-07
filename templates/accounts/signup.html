@@ -1,12 +1,66 @@
-﻿<h1>Create account</h1>
-<form method="post">{% csrf_token %}{{ form.as_p }}
-<p><small>Staff accounts are invite-only. If you select Staff, the button will be disabled.</small></p>
-<button type="submit" id="createBtn">Create account</button>
+﻿<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Bookify | Sign Up</title>
+
+    <!-- ✅ Add this inside the <head> section -->
+    <style>
+      .errorlist {
+        color: red;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+    </style>
+  </head>
+
+  <body>
+
+<h1>Create account</h1>
+
+<form method="post">
+  {% csrf_token %}
+
+  <!-- Show any global (non-field) form errors -->
+  {% if form.non_field_errors %}
+    <ul style="color:red;">
+      {% for e in form.non_field_errors %}
+        <li>{{ e }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  <!-- Render fields individually for full control -->
+  <p>First name: {{ form.first_name }} {{ form.first_name.errors }}</p>
+  <p>Last name: {{ form.last_name }} {{ form.last_name.errors }}</p>
+  <p>Email: {{ form.email }} {{ form.email.errors }}</p>
+  <p>Password: {{ form.password1 }} {{ form.password1.errors }}</p>
+  <p>Confirm Password: {{ form.password2 }} {{ form.password2.errors }}</p>
+  <p>Role: {{ form.role }} {{ form.role.errors }}</p>
+
+  <p><small>Staff accounts are invite-only. If you select Staff, the button will be disabled.</small></p>
+
+  <button type="submit" id="createBtn">Create account</button>
 </form>
+
 <script>
   const role = document.querySelector("select[name=role]") || document.querySelector("input[name=role]");
   const btn = document.getElementById("createBtn");
-  function toggle(){ if(role && role.value==="STAFF"){ btn.disabled=true; btn.title="Staff accounts are invite-only."; } else { btn.disabled=false; btn.title=""; } }
-  role && (role.onchange=toggle); toggle();
+  function toggle(){
+    if(role && role.value === "STAFF"){
+      btn.disabled = true;
+      btn.title = "Staff accounts are invite-only.";
+    } else {
+      btn.disabled = false;
+      btn.title = "";
+    }
+  }
+  role && (role.onchange = toggle);
+  toggle();
 </script>
-<p>Already have an account? <a href="/login">Log in</a></p>
+
+<p>Already have an account? <a href="{% url 'login' %}">Log in</a></p>
+
+
+
