@@ -14,6 +14,7 @@ urlpatterns = [
     path("logout/", a.logout_view, name="logout"),
     path("verify-email/", a.verify_email_view, name="verify_email"),
     path("post-login/", a.post_login_router, name="post_login"),
+    path("support/", a.contact_support, name="contact_support"),
 
     # password reset flow
     path(

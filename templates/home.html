@@ -8,35 +8,71 @@
     :root{ --blue:#1e73be; --blue2:#2f89db; --sky:#eaf5ff; --ink:#27313f; --muted:#5e6b7b }
     *{box-sizing:border-box}
     body{
-      margin:0; font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
-      min-height:100vh; display:grid; place-items:center; padding:28px;
-      background:linear-gradient(135deg,#eaf3ff 0%,#f6fbff 100%); color:var(--ink);
+      margin:0;
+      font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+      min-height:100vh;
+      display:grid;
+      place-items:center;
+      padding:28px;
+      background:linear-gradient(135deg,#eaf3ff 0%,#f6fbff 100%);
+      color:var(--ink);
+      position:relative; /* enable absolute positioning for Support link */
     }
     .card{
-      width:min(560px,92vw); background:#fff; border:1px solid #dfe8f5; border-radius:18px;
-      padding:36px 28px; text-align:center; box-shadow:0 6px 18px rgba(0,0,0,.05);
+      width:min(560px,92vw);
+      background:#fff;
+      border:1px solid #dfe8f5;
+      border-radius:18px;
+      padding:36px 28px;
+      text-align:center;
+      box-shadow:0 6px 18px rgba(0,0,0,.05);
     }
     .icon-plate{ width:64px; height:64px; display:block; margin:0 auto 10px; opacity:.95 }
     h1{ margin:6px 0 8px; font-size:30px; color:var(--blue) }
     p{ margin:0 0 18px; color:#555; font-size:15px }
     nav{ display:flex; justify-content:center; flex-wrap:wrap; gap:12px; margin-top:6px }
-    a.btn{ display:inline-block; padding:10px 18px; border-radius:12px; text-decoration:none; font-weight:600; font-size:15px; border:1px solid #d0dff0; transition:.2s }
+    a.btn{
+      display:inline-block;
+      padding:10px 18px;
+      border-radius:12px;
+      text-decoration:none;
+      font-weight:600;
+      font-size:15px;
+      border:1px solid #d0dff0;
+      transition:.2s;
+    }
     a.primary{ background:var(--blue); color:#fff; border-color:var(--blue) }
     a.primary:hover{ background:var(--blue2) }
     a.secondary:hover{ background:#f4f7fb }
+
+    /* ✅ Support link styling (top-right corner) */
+    .support-link {
+      position: absolute;
+      top: 20px;
+      right: 32px;
+      font-weight: 600;
+      color: var(--blue);
+      text-decoration: none;
+      transition: color 0.2s ease;
+      font-size: 15px;
+    }
+    .support-link:hover {
+      color: var(--blue2);
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
+  <!-- ✅ Support link (always visible at top-right) -->
+  <a href="{% url 'contact_support' %}" class="support-link">Support</a>
+
   <div class="card">
-    <!-- Plate + cutlery (inline SVG; no static files needed) -->
+    <!-- Plate + cutlery icon -->
     <svg class="icon-plate" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" fill="none"
          stroke="#1e73be" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-label="Plate with cutlery">
-      <!-- plate -->
       <circle cx="32" cy="32" r="18" fill="#eaf5ff" stroke="#2f89db"/>
       <circle cx="32" cy="32" r="10" stroke="#a7d3ff"/>
-      <!-- fork -->
       <path d="M18 10v18M22 10v18M20 10v18M20 28v26"/>
-      <!-- knife -->
       <path d="M46 10c4 6 4 12 0 18v26"/>
     </svg>
 
@@ -54,7 +90,6 @@
         <a class="btn primary" href="{% url 'signup' %}">Sign Up</a>
         <a class="btn secondary" href="{% url 'login' %}">Log In</a>
         <a class="btn secondary" href="/browse/">Browse Restaurants</a>
-        <a class="btn secondary" href="/contact/">Contact Support</a>
       </nav>
     {% endif %}
   </div>

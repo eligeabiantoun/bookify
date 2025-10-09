@@ -108,7 +108,7 @@ def create_invitation_view(request):
             subject="Your Bookify staff invite",
              message= f"Open this link to join: {link}",
               from_email= None, 
-              recepient_list=[email],
+              recipient_list=[email],
         )
         messages.success(request, f"Invitation sent to {email}")
         return redirect("owner_dashboard")
@@ -160,3 +160,11 @@ def staff_dashboard(request):
     if request.user.role != User.Roles.STAFF: 
         return HttpResponseForbidden("403")
     return render(request, "accounts/dashboard_staff.html")
+
+# --- Contact Support page ---
+def contact_support(request):
+    """
+    Static Contact Support page (UI only for now).
+    Later you can POST this form to send email/save a ticket.
+    """
+    return render(request, "accounts/contact_support.html")

@@ -1,0 +1,35 @@
+/* Background: soft Bookify gradient */
+.bg-bookify {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #eef6ff 0%, #e6f0ff 50%, #eef6ff 100%);
+}
+
+/* Logo text style to match your light aesthetic */
+.logo-text {
+  letter-spacing: 0.5px;
+}
+
+/* Card depth & spacing */
+.support-card {
+  max-width: 1080px;
+  background: #fff;
+}
+
+/* Button hover glow */
+.btn-glow {
+  transition: box-shadow 0.2s ease, transform 0.05s ease;
+}
+.btn-glow:hover {
+  box-shadow: 0 0 0.75rem rgba(13,110,253,0.35);
+  transform: translateY(-1px);
+}
+
+/* Subtle inputs */
+.form-control, .form-select {
+  border-radius: 0.75rem;
+}
+
+/* Make it comfy on small screens */
+@media (max-width: 576px) {
+  .support-card { padding: 1.25rem !important; }
+}
