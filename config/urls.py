@@ -4,7 +4,6 @@ from accounts import views as a
 from django.contrib.auth import views as auth_views
 from django.views.generic import TemplateView
 
-
 urlpatterns = [
     path("", TemplateView.as_view(template_name="home.html"), name="home"),
 
@@ -13,10 +12,11 @@ urlpatterns = [
     path("signup/", a.signup_view, name="signup"),
     path("login/", a.login_view, name="login"),
     path("logout/", a.logout_view, name="logout"),
-    path("accounts/logout/", a.logout_view, name="accounts_logout"),
     path("verify-email/", a.verify_email_view, name="verify_email"),
     path("post-login/", a.post_login_router, name="post_login"),
     path("support/", a.contact_support, name="contact_support"),
+    path("browse/", TemplateView.as_view(template_name="browse.html"), name="browse"),
+    path("contact/", TemplateView.as_view(template_name="contact.html"), name="contact_support"),
 
     # password reset flow
     path(
@@ -54,9 +54,7 @@ urlpatterns = [
     path("dashboard/customer/", a.customer_dashboard, name="customer_dashboard"),
     path("dashboard/owner/", a.owner_dashboard, name="owner_dashboard"),
     path("dashboard/staff/", a.staff_dashboard, name="staff_dashboard"),
-    
 
     # Built-in auth extras (password change, etc.). Safe to keep.
     path("accounts/", include("django.contrib.auth.urls")),
 ]
-
