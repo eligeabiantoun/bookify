@@ -1,4 +1,4 @@
-﻿{% load static %}
+{% load static %}
 <!doctype html>
 <html lang="en">
 <head>
@@ -15,9 +15,9 @@
   <!-- Shared auth styles -->
   <link href="{% static 'css/auth.css' %}" rel="stylesheet" />
 
-  <!-- Fallback (keeps Django default .errorlist usable even before auth.css is added) -->
+  <!-- Fallback for Django error lists (keeps readable even if auth.css misses it) -->
   <style>
-    .errorlist { color: #ffb4b4; list-style: none; padding: 0; margin: .375rem 0 0; font-size: .85rem; }
+    .errorlist { color:#ffb4b4; list-style:none; padding:0; margin:.375rem 0 0; font-size:.85rem; }
   </style>
 </head>
 
@@ -54,9 +54,7 @@
           <label for="{{ form.first_name.id_for_label }}" class="form-label text-white-50">First name</label>
           {{ form.first_name }}
           {% if form.first_name.errors %}
-            <ul class="errorlist">
-              {% for e in form.first_name.errors %}<li>{{ e }}</li>{% endfor %}
-            </ul>
+            <ul class="errorlist">{% for e in form.first_name.errors %}<li>{{ e }}</li>{% endfor %}</ul>
           {% endif %}
         </div>
 
@@ -65,9 +63,7 @@
           <label for="{{ form.last_name.id_for_label }}" class="form-label text-white-50">Last name</label>
           {{ form.last_name }}
           {% if form.last_name.errors %}
-            <ul class="errorlist">
-              {% for e in form.last_name.errors %}<li>{{ e }}</li>{% endfor %}
-            </ul>
+            <ul class="errorlist">{% for e in form.last_name.errors %}<li>{{ e }}</li>{% endfor %}</ul>
           {% endif %}
         </div>
 
@@ -76,48 +72,54 @@
           <label for="{{ form.email.id_for_label }}" class="form-label text-white-50">Email</label>
           {{ form.email }}
           {% if form.email.errors %}
-            <ul class="errorlist">
-              {% for e in form.email.errors %}<li>{{ e }}</li>{% endfor %}
-            </ul>
+            <ul class="errorlist">{% for e in form.email.errors %}<li>{{ e }}</li>{% endfor %}</ul>
           {% endif %}
         </div>
 
-        <!-- Password (password1) -->
+        <!-- Password -->
         <div class="mb-3">
           <label for="{{ form.password1.id_for_label }}" class="form-label text-white-50">Password</label>
           {{ form.password1 }}
           {% if form.password1.errors %}
-            <ul class="errorlist">
-              {% for e in form.password1.errors %}<li>{{ e }}</li>{% endfor %}
-            </ul>
+            <ul class="errorlist">{% for e in form.password1.errors %}<li>{{ e }}</li>{% endfor %}</ul>
           {% endif %}
         </div>
 
-        <!-- Confirm password (password2) -->
+        <!-- Confirm Password -->
         <div class="mb-3">
           <label for="{{ form.password2.id_for_label }}" class="form-label text-white-50">Confirm password</label>
           {{ form.password2 }}
           {% if form.password2.errors %}
-            <ul class="errorlist">
-              {% for e in form.password2.errors %}<li>{{ e }}</li>{% endfor %}
-            </ul>
+            <ul class="errorlist">{% for e in form.password2.errors %}<li>{{ e }}</li>{% endfor %}</ul>
           {% endif %}
         </div>
 
         <!-- Role -->
         <div class="mb-2">
           <label for="{{ form.role.id_for_label }}" class="form-label text-white-50">Role</label>
-          {{ form.role }}
-          {% if form.role.errors %}
-            <ul class="errorlist">
-              {% for e in form.role.errors %}<li>{{ e }}</li>{% endfor %}
-            </ul>
+
+          {# If your Django form already renders a <select>, use it directly #}
+          {% if form.role %}
+            {{ form.role }}
+          {% else %}
+            {# Fallback manual select with extended roles #}
+            <select name="role" id="id_role" class="form-select" required>
+              <option value="CUSTOMER" selected>Customer</option>
+              <option value="OWNER">Owner</option>
+              <option value="STAFF" data-invite-only="1" disabled>Customer Service (Staff) — invite-only</option>
+              <option value="ADMIN" data-invite-only="1" disabled>Admin — invite-only</option>
+              <option value="SUPPORT" data-invite-only="1" disabled>Support — invite-only</option>
+            </select>
+          {% endif %}
+
+          {% if form.role and form.role.errors %}
+            <ul class="errorlist">{% for e in form.role.errors %}<li>{{ e }}</li>{% endfor %}</ul>
           {% endif %}
         </div>
 
         <!-- Informational note -->
-        <p class="small text-white-50 mb-4">
-          Staff accounts are invite-only. If you select Staff, the button will be disabled.
+        <p id="roleNote" class="small text-white-50 mb-4">
+          Staff/Admin/Support accounts are invite-only. Selecting one will disable the button.
         </p>
 
         <!-- Primary CTA -->
@@ -131,30 +133,49 @@
     </div>
   </main>
 
-  <!-- JS (Bootstrap bundle + small role-toggle script) -->
+  <!-- JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    // Keep your original logic: disable button when STAFF is selected.
+    // Works whether role is rendered by Django or our fallback <select>
     const roleField =
-      document.querySelector("select[name=role]") ||
-      document.querySelector("input[name=role]");
-    const createBtn = document.getElementById("createBtn");
+      document.querySelector('select[name="role"]') ||
+      document.getElementById('id_role');
 
-    function toggleCreate() {
-      if (roleField && roleField.value === "STAFF") {
-        createBtn.disabled = true;
-        createBtn.title = "Staff accounts are invite-only.";
-      } else {
-        createBtn.disabled = false;
-        createBtn.title = "";
+    const createBtn = document.getElementById('createBtn');
+    const roleNote  = document.getElementById('roleNote');
+
+    // Treat these as invite-only (extend as needed)
+    const INVITE_ONLY = new Set(['STAFF', 'ADMIN', 'SUPPORT']);
+
+    // If Django rendered the select, mark invite-only options as disabled too.
+    function disableInviteOnlyOptions() {
+      if (!roleField) return;
+      for (const opt of roleField.options) {
+        if (INVITE_ONLY.has(opt.value)) {
+          opt.disabled = true;
+          // mirror your data attribute for consistency
+          opt.dataset.inviteOnly = '1';
+        }
       }
     }
 
-    roleField && roleField.addEventListener("change", toggleCreate);
-    toggleCreate();
+    function isInviteOnlySelected() {
+      if (!roleField) return false;
+      const opt = roleField.options[roleField.selectedIndex];
+      if (opt && opt.dataset && opt.dataset.inviteOnly === '1') return true;
+      return INVITE_ONLY.has(roleField.value);
+    }
+
+    function toggleCreate() {
+      const disabled = isInviteOnlySelected();
+      createBtn.disabled = disabled;
+      createBtn.title = disabled ? 'This role cannot be self-registered.' : '';
+      roleNote.style.opacity = disabled ? '1' : '0.85';
+    }
+
+    disableInviteOnlyOptions();
+    roleField && roleField.addEventListener('change', toggleCreate);
+    toggleCreate(); // run on load
   </script>
 </body>
 </html>
-
-
-
