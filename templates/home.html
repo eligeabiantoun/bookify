@@ -5,95 +5,109 @@
   <title>Bookify — Your Table Awaits</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    :root{ --blue:#1e73be; --blue2:#2f89db; --sky:#eaf5ff; --ink:#27313f; --muted:#5e6b7b }
-    *{box-sizing:border-box}
+    :root{
+      /* palette (keeps her orange accent + blue bg) */
+      --accent:#ff6a2a;
+      --accent-2:#ff8451;
+      --navy:#10243e;
+      --muted:#5e6b7b;
+      --border:#d7e6ff;
+      --card:#ffffff;
+      --text:#0f1b2d;
+      --blue-a:#eaf3ff;
+      --blue-b:#f6fbff;
+      --blue:#1e73be;
+      --blue2:#2f89db;
+    }
+
+    html, body { height:100%; }
     body{
-      margin:0;
-      font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
       min-height:100vh;
       display:grid;
       place-items:center;
       padding:28px;
-      background:linear-gradient(135deg,#eaf3ff 0%,#f6fbff 100%);
-      color:var(--ink);
-      position:relative; /* enable absolute positioning for Support link */
+      background:linear-gradient(135deg, var(--blue-a) 0%, var(--blue-b) 100%);
+      color:var(--text);
     }
+
+    /* ✅ Support link pinned top-right */
+    .support-link{
+      position:fixed;      /* stays in the corner regardless of content */
+      top:20px;
+      right:32px;
+      font-weight:600;
+      color:var(--blue);
+      text-decoration:none;
+      font-size:15px;
+      transition:color .2s ease;
+      z-index:1000;
+    }
+    .support-link:hover{ color:var(--blue2); text-decoration:underline; }
+
+    /* Card + layout (keeps her sizes/shadows) */
     .card{
-      width:min(560px,92vw);
-      background:#fff;
-      border:1px solid #dfe8f5;
+      width:min(780px,92vw);
+      background:var(--card);
+      border:1px solid var(--border);
       border-radius:18px;
-      padding:36px 28px;
+      padding:44px 36px;
       text-align:center;
-      box-shadow:0 6px 18px rgba(0,0,0,.05);
+      box-shadow:0 10px 30px rgba(0,0,0,.06);
     }
-    .icon-plate{ width:64px; height:64px; display:block; margin:0 auto 10px; opacity:.95 }
+
+    /* BIGGER LOGO (kept) */
+    .logo-wrap{ display:flex; justify-content:center; margin-bottom:12px; }
+    .brand-logo{ width:240px; height:240px; display:block; }
+
     h1{ margin:6px 0 8px; font-size:30px; color:var(--blue) }
-    p{ margin:0 0 18px; color:#555; font-size:15px }
-    nav{ display:flex; justify-content:center; flex-wrap:wrap; gap:12px; margin-top:6px }
+    p{ margin:8px 0 24px; color:var(--muted); font-size:16px }
+
+    nav{ display:flex; justify-content:center; flex-wrap:wrap; gap:14px; margin-top:6px }
+
     a.btn{
       display:inline-block;
-      padding:10px 18px;
+      padding:12px 20px;
       border-radius:12px;
       text-decoration:none;
-      font-weight:600;
-      font-size:15px;
-      border:1px solid #d0dff0;
+      font-weight:700;
+      font-size:16px;
+      border:1px solid var(--border);
       transition:.2s;
     }
-    a.primary{ background:var(--blue); color:#fff; border-color:var(--blue) }
-    a.primary:hover{ background:var(--blue2) }
-    a.secondary:hover{ background:#f4f7fb }
 
-    /* ✅ Support link styling (top-right corner) */
-    .support-link {
-      position: absolute;
-      top: 20px;
-      right: 32px;
-      font-weight: 600;
-      color: var(--blue);
-      text-decoration: none;
-      transition: color 0.2s ease;
-      font-size: 15px;
-    }
-    .support-link:hover {
-      color: var(--blue2);
-      text-decoration: underline;
-    }
+    /* ORANGE primary button (kept) */
+    a.primary{ background:var(--accent); color:#fff; border-color:var(--accent); }
+    a.primary:hover{ background:var(--accent-2); }
+
+    /* Secondary buttons keep blue tone */
+    a.secondary{ background:#fff; color:var(--navy); }
+    a.secondary:hover{ background:#f3f7ff; border-color:#d7e6ff; }
+
+    /* Optional: highlight Browse in orange border/text */
+    a.secondary[href*="browse"]{ color:var(--accent); border-color:#ffd7c8; }
+    a.secondary[href*="browse"]:hover{ background:#fff3ee; }
   </style>
 </head>
 <body>
-  <!-- ✅ Support link (always visible at top-right) -->
+  {% load static %}
+
+  <!-- ✅ Top-right Support -->
   <a href="{% url 'contact_support' %}" class="support-link">Support</a>
 
   <div class="card">
-    <!-- Plate + cutlery icon -->
-    <svg class="icon-plate" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" fill="none"
-         stroke="#1e73be" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-label="Plate with cutlery">
-      <circle cx="32" cy="32" r="18" fill="#eaf5ff" stroke="#2f89db"/>
-      <circle cx="32" cy="32" r="10" stroke="#a7d3ff"/>
-      <path d="M18 10v18M22 10v18M20 10v18M20 28v26"/>
-      <path d="M46 10c4 6 4 12 0 18v26"/>
-    </svg>
+    <div class="logo-wrap">
+      <img class="brand-logo" src="{% static 'img/bookify.png' %}" alt="Bookify logo">
+    </div>
 
-    <h1>Welcome to Bookify</h1>
-    <p>Discover, reserve, and enjoy your favorite restaurants — effortlessly.</p>
+    <h1>Bookify</h1>
+    <p>No more calls, waiting, or missed reservations. Book now, with Bookify.</p>
 
-    {% if user.is_authenticated %}
-      <nav>
-        <a class="btn primary" href="/browse/">Browse Restaurants</a>
-        <a class="btn secondary" href="/profile/">My Profile</a>
-        <a class="btn secondary" href="{% url 'logout' %}">Logout</a>
-
-
-      </nav>
-    {% else %}
-      <nav>
-        <a class="btn primary" href="{% url 'signup' %}">Sign Up</a>
-        <a class="btn secondary" href="{% url 'login' %}">Log In</a>
-        <a class="btn secondary" href="/browse/">Browse Restaurants</a>
-      </nav>
-    {% endif %}
+    <nav>
+      <a href="{% url 'signup' %}" class="btn primary">Sign Up</a>
+      <a href="{% url 'login' %}" class="btn secondary">Log In</a>
+      <a href="{% url 'browse' %}" class="btn secondary">Browse Restaurants</a>
+      <a href="{% url 'contact_support' %}" class="btn secondary">Contact Support</a>
+    </nav>
   </div>
 </body>
 </html>
