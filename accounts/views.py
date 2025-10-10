@@ -8,6 +8,8 @@ from django.utils import timezone
 from django.urls import reverse
 from .models import User, StaffInvitation
 from .forms import SignupForm, LoginForm
+from django.shortcuts import redirect
+
 
 def _send_verification_email(user, request):
     token = user.make_email_token()
@@ -63,7 +65,8 @@ def login_view(request):
 
 def logout_view(request):
     logout(request)
-    return redirect("login")
+    return redirect("home")
+
 
 def verify_email_view(request):
     token = request.GET.get("token")
