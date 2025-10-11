@@ -14,9 +14,14 @@ urlpatterns = [
     path("logout/", a.logout_view, name="logout"),
     path("verify-email/", a.verify_email_view, name="verify_email"),
     path("post-login/", a.post_login_router, name="post_login"),
+
+    # Support link target stays the same
     path("support/", a.contact_support, name="contact_support"),
+
     path("browse/", TemplateView.as_view(template_name="browse.html"), name="browse"),
-    path("contact/", TemplateView.as_view(template_name="contact.html"), name="contact_support"),
+
+    # ✅ Only change: give this a different name to avoid clashing
+    path("contact/", TemplateView.as_view(template_name="contact.html"), name="contact"),
 
     # password reset flow
     path(
@@ -55,6 +60,6 @@ urlpatterns = [
     path("dashboard/owner/", a.owner_dashboard, name="owner_dashboard"),
     path("dashboard/staff/", a.staff_dashboard, name="staff_dashboard"),
 
-    # Built-in auth extras (password change, etc.). Safe to keep.
+    # Built-in auth extras
     path("accounts/", include("django.contrib.auth.urls")),
 ]
