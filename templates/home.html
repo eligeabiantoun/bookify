@@ -6,84 +6,61 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     :root{
-      /* palette (keeps her orange accent + blue bg) */
-      --accent:#ff6a2a;
-      --accent-2:#ff8451;
-      --navy:#10243e;
-      --muted:#5e6b7b;
-      --border:#d7e6ff;
-      --card:#ffffff;
-      --text:#0f1b2d;
-      --blue-a:#eaf3ff;
-      --blue-b:#f6fbff;
-      --blue:#1e73be;
-      --blue2:#2f89db;
+      --accent:#ff6a2a; --accent-2:#ff8451;
+      --navy:#0b1b34; --muted:#5e6b7b; --border:#d7e6ff;
+      --card:#ffffff; --text:#0f1b2d; --blue:#1e73be;
     }
-
     html, body { height:100%; }
     body{
-      min-height:100vh;
-      display:grid;
-      place-items:center;
-      padding:28px;
-      background:linear-gradient(135deg, var(--blue-a) 0%, var(--blue-b) 100%);
-      color:var(--text);
+      min-height:100vh; display:grid; place-items:center; padding:20px;
+      background:var(--navy); color:var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
     }
 
-    /* ✅ Support link pinned top-right */
+    /* Support link (unchanged) */
     .support-link{
-      position:fixed;      /* stays in the corner regardless of content */
-      top:20px;
-      right:32px;
-      font-weight:600;
-      color:var(--blue);
-      text-decoration:none;
-      font-size:15px;
-      transition:color .2s ease;
-      z-index:1000;
+      position:fixed; top:18px; right:28px; z-index:1000;
+      font-weight:800; color:#e6efff; text-decoration:none; letter-spacing:.2px;
     }
-    .support-link:hover{ color:var(--blue2); text-decoration:underline; }
+    .support-link:hover{ opacity:.9; text-decoration:underline; }
 
-    /* Card + layout (keeps her sizes/shadows) */
+    /* Smaller card */
     .card{
-      width:min(780px,92vw);
+      width:min(520px, 90vw);                /* was ~600–780px → now slimmer */
       background:var(--card);
-      border:1px solid var(--border);
-      border-radius:18px;
-      padding:44px 36px;
+      border:1px solid var(--border); border-radius:14px;
+      padding:22px 20px;                     /* tighter padding */
       text-align:center;
-      box-shadow:0 10px 30px rgba(0,0,0,.06);
+      box-shadow:0 10px 34px rgba(0,0,0,.16);
     }
 
-    /* BIGGER LOGO (kept) */
-    .logo-wrap{ display:flex; justify-content:center; margin-bottom:12px; }
-    .brand-logo{ width:240px; height:240px; display:block; }
+    /* Bigger logo */
+    .logo-wrap{ display:flex; justify-content:center; margin-bottom:10px; }
+    .brand-logo{ width:260px; height:auto; display:block; }  /* ↑ bigger */
+    h1{ margin:6px 0 4px; font-size:26px; color:var(--blue); font-weight:800; }
 
-    h1{ margin:6px 0 8px; font-size:30px; color:var(--blue) }
-    p{ margin:8px 0 24px; color:var(--muted); font-size:16px }
+    /* Exact tagline text + narrow measure */
+    p.tagline{
+      margin:8px auto 16px; color:var(--muted); font-size:16px; max-width:40ch;
+    }
 
-    nav{ display:flex; justify-content:center; flex-wrap:wrap; gap:14px; margin-top:6px }
-
+    /* Smaller buttons (narrower + less padding) */
+    nav{
+      display:flex; flex-direction:column; gap:8px;
+      max-width:300px;                      /* narrower button stack */
+      margin:0 auto;
+    }
     a.btn{
-      display:inline-block;
-      padding:12px 20px;
-      border-radius:12px;
-      text-decoration:none;
-      font-weight:700;
-      font-size:16px;
-      border:1px solid var(--border);
-      transition:.2s;
+      display:block; width:100%;
+      padding:9px 14px;                     /* less tall */
+      border-radius:12px; text-decoration:none;
+      font-weight:800; font-size:15px; letter-spacing:.2px;
+      border:1px solid var(--border); transition:.2s;
     }
-
-    /* ORANGE primary button (kept) */
     a.primary{ background:var(--accent); color:#fff; border-color:var(--accent); }
     a.primary:hover{ background:var(--accent-2); }
-
-    /* Secondary buttons keep blue tone */
-    a.secondary{ background:#fff; color:var(--navy); }
+    a.secondary{ background:#fff; color:#0b1b34; }
     a.secondary:hover{ background:#f3f7ff; border-color:#d7e6ff; }
-
-    /* Optional: highlight Browse in orange border/text */
     a.secondary[href*="browse"]{ color:var(--accent); border-color:#ffd7c8; }
     a.secondary[href*="browse"]:hover{ background:#fff3ee; }
   </style>
@@ -91,22 +68,23 @@
 <body>
   {% load static %}
 
-  <!-- ✅ Top-right Support -->
+  <!-- Support link -->
   <a href="{% url 'contact_support' %}" class="support-link">Support</a>
 
   <div class="card">
     <div class="logo-wrap">
-      <img class="brand-logo" src="{% static 'img/bookify.png' %}" alt="Bookify logo">
+      <img class="brand-logo" src="{% static 'images/bookify.png' %}" alt="Bookify logo">
     </div>
 
-    <h1>Bookify</h1>
-    <p>No more calls, waiting, or missed reservations. Book now, with Bookify.</p>
-
+    <p class="tagline">
+      No more calls, waiting, or missed reservations.<br>
+      Book now, with Bookify.
+    </p>
+    
     <nav>
       <a href="{% url 'signup' %}" class="btn primary">Sign Up</a>
       <a href="{% url 'login' %}" class="btn secondary">Log In</a>
       <a href="{% url 'browse' %}" class="btn secondary">Browse Restaurants</a>
-      <a href="{% url 'contact_support' %}" class="btn secondary">Contact Support</a>
     </nav>
   </div>
 </body>
