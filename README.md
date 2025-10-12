@@ -1,5 +1,5 @@
 # bookify
-Bookify is a web application that allows users to discover, browse, and reserve tables at restaurants. It currently features a clean homepage with quick access to sign-up, log-in, and browse options. Each user role—Owner, Customer, and Staff—has its own dashboard with a ← Home button for easy navigation. The project uses simple HTML/CSS templates, and clean URL routing where the root path displays the new home.html design.
+Bookify is a web application that allows users to discover, browse, and reserve tables at restaurants. It currently features a clean homepage with quick access to sign-up, log-in, and browse options. Each user role Owner, Customer, and Staff has its own dashboard with a ← Home button for easy navigation. The project uses simple HTML/CSS templates, and clean URL routing where the root path displays the new home.html design.
 
 We are currently in Sprint 1, focusing on setting up the core architecture, authentication system, and basic user dashboards.
 In Sprints 2 and 3, we will continue to develop and integrate all MVP features, including real-time queue management, reservation confirmation, restaurant analytics, and an enhanced user interface.
