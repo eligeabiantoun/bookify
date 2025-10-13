@@ -3,6 +3,7 @@ from .models import User
 
 pwd_help = "Min 8 chars, at least 1 letter and 1 digit."
 
+
 class SignupForm(forms.ModelForm):
     password1 = forms.CharField(
         widget=forms.PasswordInput, 
@@ -14,13 +15,14 @@ class SignupForm(forms.ModelForm):
     label="Confirm Password"
     )
     role = forms.ChoiceField(
-        choices=[(User.Roles.CUSTOMER, "Customer"), 
-                 (User.Roles.OWNER, "Owner")]
+        choices=User.Roles.choices,
+        widget=forms.Select(attrs={"class": "form-select", "id": "id_role"}),
     )
 
     class Meta:
         model = User
         fields = ["first_name", "last_name", "email", "role"]
+
 
     def clean_password1(self):
         p = self.cleaned_data.get("password1", "")
@@ -35,8 +37,7 @@ class SignupForm(forms.ModelForm):
         if p1 and p2 and p1 != p2:
             self.add_error("password2", "Passwords do not match.")
         return cleaned
-
-
+    
 class LoginForm(forms.Form):
     email = forms.EmailField()
     password = forms.CharField(widget=forms.PasswordInput)

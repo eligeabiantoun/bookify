@@ -29,8 +29,11 @@ class User(AbstractUser):
         CUSTOMER = "CUSTOMER","Customer"
         STAFF    = "STAFF","Staff"
         OWNER    = "OWNER","Owner"
-        ADMIN    = "ADMIN","Admin"
-    role = models.CharField(max_length=16, choices=Roles.choices, default=Roles.CUSTOMER)
+        SUPPORT = "SUPPORT","Support"
+    role = models.CharField(
+        max_length=16, 
+        choices=Roles.choices, 
+        default=Roles.CUSTOMER)
     is_email_verified = models.BooleanField(default=False)
     first_name = models.CharField(max_length=150, blank=True)
     last_name  = models.CharField(max_length=150, blank=True)
@@ -60,7 +63,9 @@ class StaffInvitation(models.Model):
     restaurant = models.ForeignKey(Restaurant, null=True, blank=True, on_delete=models.SET_NULL)
     token = models.CharField(max_length=64, unique=True, db_index=True)
     invited_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="sent_invites")
-    role = models.CharField(max_length=16, default=User.Roles.STAFF)
+    role = models.CharField(max_length=16, 
+    choices=User.Roles.choices, 
+    default=User.Roles.STAFF)
     expires_at = models.DateTimeField()
     accepted_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
