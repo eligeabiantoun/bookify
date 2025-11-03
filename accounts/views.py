@@ -1,14 +1,20 @@
-from django.shortcuts import render, redirect
+import datetime
+
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.mail import send_mail
+from django.db.models import Q
 from django.http import HttpResponseForbidden
-from django.utils import timezone
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from .models import User, StaffInvitation
-from .forms import SignupForm, LoginForm
-from django.shortcuts import redirect
+from django.utils import timezone
+from django.utils.timesince import timesince
+
+from .forms import LoginForm, SignupForm
+from .models import StaffInvitation, User
+from restaurants.forms import ReservationForm
+from restaurants.models import Reservation, Restaurant
 
 
 def _send_verification_email(user, request):
@@ -103,9 +109,30 @@ def create_invitation_view(request):
 
     """Owner creates a staff invitation."""
 
+    restaurant = Restaurant.objects.filter(owner=request.user).first()
+    if restaurant is None:
+        messages.error(request, "Create your restaurant before inviting staff.")
+        return redirect("owner_restaurant_create")
+
     if request.method == "POST":
-        email = request.POST.get("email")
-        inv = StaffInvitation.new_invite(email=email, invited_by=request.user)
+        email = (request.POST.get("email") or "").strip().lower()
+        if not email:
+            messages.error(request, "Email address is required.")
+            return redirect("owner_dashboard")
+        existing = StaffInvitation.objects.filter(
+            invited_by=request.user,
+            email__iexact=email,
+            accepted_at__isnull=True,
+            expires_at__gt=timezone.now(),
+        ).first()
+        if existing:
+            messages.warning(request, f"An active invite already exists for {email}.")
+            return redirect("owner_dashboard")
+        inv = StaffInvitation.new_invite(
+            email=email,
+            invited_by=request.user,
+            restaurant=restaurant,
+        )
         link = request.build_absolute_uri(reverse("accept_invite") + f"?token={inv.token}")
         send_mail(
             subject="Your Bookify staff invite",
@@ -148,15 +175,268 @@ def accept_invite_view(request):
 
 @login_required
 def customer_dashboard(request):
-    if request.user.role != User.Roles.CUSTOMER: 
+    if request.user.role != User.Roles.CUSTOMER:
         return HttpResponseForbidden("403")
-    return render(request, "accounts/dashboard_customer.html")
+
+    search_query = (request.GET.get("q") or "").strip()
+
+    restaurants_qs = Restaurant.objects.all()
+    if search_query:
+        restaurants_qs = restaurants_qs.filter(
+            Q(name__icontains=search_query)
+            | Q(cuisine__icontains=search_query)
+            | Q(address__icontains=search_query)
+        )
+    restaurants_qs = restaurants_qs.order_by("-rating", "name")
+    restaurants_list = list(restaurants_qs)
+
+    reservation_form_with_errors = None
+    active_restaurant_id = None
+
+    if request.method == "POST":
+        form = ReservationForm(
+            request.POST,
+            restaurant_queryset=restaurants_qs,
+        )
+        if form.is_valid():
+            reservation = form.save(commit=False)
+            reservation.customer = request.user
+            reservation.status = Reservation.Status.PENDING
+            reservation.save()
+            messages.success(
+                request,
+                "Reservation request submitted! We'll email you once the restaurant confirms.",
+            )
+            return redirect("customer_dashboard")
+        reservation_form_with_errors = form
+        try:
+            active_restaurant_id = int(request.POST.get("restaurant"))
+        except (TypeError, ValueError):
+            active_restaurant_id = None
+
+    def build_opening_hours_rows(raw_hours):
+        rows = []
+        if isinstance(raw_hours, dict):
+            ordered_days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+            seen = set()
+            for day in ordered_days:
+                hours = raw_hours.get(day)
+                if hours is None:
+                    continue
+                seen.add(day)
+                if isinstance(hours, dict):
+                    rows.append(
+                        (day, f"{hours.get('open', '--')} - {hours.get('close', '--')}")
+                    )
+                else:
+                    rows.append((day, str(hours)))
+            for day, hours in raw_hours.items():
+                if day in seen:
+                    continue
+                if isinstance(hours, dict):
+                    rows.append(
+                        (day, f"{hours.get('open', '--')} - {hours.get('close', '--')}")
+                    )
+                else:
+                    rows.append((day, str(hours)))
+        return rows
+
+    restaurants_payload = []
+    for restaurant in restaurants_list:
+        if (
+            reservation_form_with_errors is not None
+            and active_restaurant_id == restaurant.id
+        ):
+            form_instance = reservation_form_with_errors
+        else:
+            form_instance = ReservationForm(
+                initial={"restaurant": restaurant.pk},
+                restaurant_queryset=restaurants_qs,
+            )
+
+        restaurants_payload.append(
+            {
+                "obj": restaurant,
+                "opening_hours": build_opening_hours_rows(restaurant.opening_hours),
+                "form": form_instance,
+            }
+        )
+
+    tz = timezone.get_current_timezone()
+    now_local = timezone.localtime()
+    upcoming = []
+    past = []
+    reservations_qs = (
+        Reservation.objects.filter(customer=request.user)
+        .select_related("restaurant")
+        .order_by("reservation_date", "reservation_time")
+    )
+    for reservation in reservations_qs:
+        combined = datetime.datetime.combine(
+            reservation.reservation_date, reservation.reservation_time
+        )
+        if timezone.is_naive(combined):
+            reservation_dt = timezone.make_aware(combined, tz)
+        else:
+            reservation_dt = combined.astimezone(tz)
+        payload = {
+            "instance": reservation,
+            "datetime": reservation_dt,
+        }
+        if (
+            reservation.status != Reservation.Status.CANCELLED
+            and reservation_dt >= now_local
+        ):
+            upcoming.append(payload)
+        else:
+            past.append(payload)
+
+    past.sort(key=lambda item: item["datetime"], reverse=True)
+
+    context = {
+        "search_query": search_query,
+        "restaurants": restaurants_payload,
+        "has_restaurants": bool(restaurants_payload),
+        "upcoming_reservations": upcoming,
+        "past_reservations": past[:5],
+        "active_restaurant_id": active_restaurant_id,
+    }
+    return render(request, "accounts/dashboard_customer.html", context)
+
+
+@login_required
+def cancel_reservation(request, pk):
+    if request.user.role != User.Roles.CUSTOMER:
+        return HttpResponseForbidden("403")
+
+    reservation = get_object_or_404(
+        Reservation,
+        pk=pk,
+        customer=request.user,
+    )
+
+    if request.method == "POST":
+        if reservation.status == Reservation.Status.CANCELLED:
+            messages.info(request, "This reservation was already cancelled.")
+        else:
+            reservation.status = Reservation.Status.CANCELLED
+            reservation.save(update_fields=["status", "updated_at"])
+            messages.success(request, "Reservation cancelled.")
+    else:
+        messages.error(request, "Invalid request.")
+
+    return redirect("customer_dashboard")
+
 
 @login_required
 def owner_dashboard(request):
     if request.user.role != User.Roles.OWNER: 
         return HttpResponseForbidden("403")
-    return render(request, "accounts/dashboard_owner.html")
+
+    restaurant = Restaurant.objects.filter(owner=request.user).first()
+    has_restaurant = restaurant is not None
+
+    opening_hours_rows = []
+    if restaurant and isinstance(restaurant.opening_hours, dict):
+        ordered_days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        for day in ordered_days:
+            hours = restaurant.opening_hours.get(day)
+            if isinstance(hours, dict):
+                opening_hours_rows.append(
+                    (day, f"{hours.get('open', '--')} - {hours.get('close', '--')}")
+                )
+            elif hours:
+                opening_hours_rows.append((day, str(hours)))
+        # include any custom keys not in the standard weekday list
+        for day, hours in restaurant.opening_hours.items():
+            if day in ordered_days:
+                continue
+            if isinstance(hours, dict):
+                opening_hours_rows.append(
+                    (day, f"{hours.get('open', '--')} - {hours.get('close', '--')}")
+                )
+            elif hours:
+                opening_hours_rows.append((day, str(hours)))
+
+    invites_qs = (
+        StaffInvitation.objects.filter(invited_by=request.user)
+        .select_related("restaurant")
+        .order_by("-created_at")
+    )
+    now = timezone.now()
+    active_invites = []
+    expired_invites = []
+    for invite in invites_qs:
+        payload = {
+            "obj": invite,
+            "link": request.build_absolute_uri(
+                reverse("accept_invite") + f"?token={invite.token}"
+            ),
+            "created_display": timesince(invite.created_at, now),
+        }
+        if invite.accepted_at:
+            continue
+        if invite.expires_at > now:
+            payload["expires_display"] = timesince(now, invite.expires_at)
+            active_invites.append(payload)
+        else:
+            payload["expires_display"] = timesince(invite.expires_at, now)
+            expired_invites.append(payload)
+
+    accepted_invite_count = invites_qs.filter(accepted_at__isnull=False).count()
+
+    pending_reservations = []
+    upcoming_reservations = []
+    recent_reservations = []
+    if restaurant:
+        tz = timezone.get_current_timezone()
+        now_local = timezone.localtime()
+        reservations_qs = (
+            restaurant.reservations.select_related("customer").order_by(
+                "reservation_date", "reservation_time"
+            )
+        )
+        for reservation in reservations_qs:
+            combined = datetime.datetime.combine(
+                reservation.reservation_date, reservation.reservation_time
+            )
+            if timezone.is_naive(combined):
+                reservation_dt = timezone.make_aware(combined, tz)
+            else:
+                reservation_dt = combined.astimezone(tz)
+            guest_name = (reservation.customer.get_full_name() or "").strip() or reservation.customer.email
+            payload = {
+                "instance": reservation,
+                "datetime": reservation_dt,
+                "guest_name": guest_name,
+                "guest_email": reservation.customer.email,
+                "notes": reservation.notes,
+            }
+            if reservation.status == Reservation.Status.PENDING:
+                pending_reservations.append(payload)
+            elif reservation.status == Reservation.Status.CONFIRMED and reservation_dt >= now_local:
+                upcoming_reservations.append(payload)
+            else:
+                recent_reservations.append(payload)
+
+    recent_reservations.sort(key=lambda item: item["datetime"], reverse=True)
+    recent_reservations = recent_reservations[:5]
+
+    context = {
+        "restaurant": restaurant,
+        "has_restaurant": has_restaurant,
+        "opening_hours_rows": opening_hours_rows,
+        "active_invites": active_invites,
+        "expired_invites": expired_invites[:3],
+        "accepted_invite_count": accepted_invite_count,
+        "invite_create_url": reverse("create_invitation"),
+        "contact_support_url": reverse("contact_support"),
+        "pending_reservations": pending_reservations,
+        "upcoming_reservations": upcoming_reservations,
+        "recent_reservations": recent_reservations,
+    }
+
+    return render(request, "accounts/dashboard_owner.html", context)
 
 @login_required
 def staff_dashboard(request):

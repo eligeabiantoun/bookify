@@ -1,0 +1,426 @@
+{% load static %}
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>{% if mode == 'edit' %}Edit{% else %}Create{% endif %} Restaurant - Bookify</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root{
+      --bg:#0f172a;           /* slate-900 */
+      --panel:#111827;        /* gray-900 */
+      --muted:#94a3b8;        /* slate-400 */
+      --text:#e5e7eb;         /* gray-200 */
+      --primary:#2563eb;      /* blue-600 */
+      --primary-2:#1d4ed8;    /* blue-700 */
+      --border:#1f2937;       /* gray-800 */
+      --ok:#22c55e;           /* green-500 */
+      --danger:#ef4444;       /* red-500 */
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--text);
+      background: radial-gradient(1200px 700px at 20% -20%, #1f2937 0, transparent 60%), var(--bg);
+      min-height:100vh; display:grid; place-items:center; padding:24px;
+    }
+    .wrap{ width:100%; max-width:960px; }
+    .card{
+      background:rgba(17,24,39,.8); border:1px solid var(--border); border-radius:18px;
+      box-shadow:0 20px 60px rgba(0,0,0,.35); overflow:hidden;
+    }
+    .head{
+      padding:20px 22px; border-bottom:1px solid var(--border);
+      display:flex; justify-content:space-between; align-items:center; gap:12px;
+    }
+    .title{ font-size:24px; margin:0; letter-spacing:.2px }
+    .sub{ color:var(--muted); font-size:13px; margin-top:4px }
+    .actions{ display:flex; gap:10px; flex-wrap:wrap }
+    .btn{
+      display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border-radius:12px;
+      border:1px solid var(--border); background:#0b1220; color:var(--text); text-decoration:none; font-weight:600;
+    }
+    .btn:hover{ background:#0c1426; border-color:#273244 }
+    .btn.primary{ background:var(--primary); border-color:transparent; color:#fff }
+    .btn.primary:hover{ background:var(--primary-2) }
+    .btn.ghost{ background:transparent }
+
+    form{ padding:22px; display:grid; grid-template-columns:1fr; gap:16px }
+    .grid{ display:grid; gap:14px }
+    @media (min-width: 900px){
+      .grid.two{ grid-template-columns:1fr 1fr }
+    }
+    label{ display:block; font-weight:600; margin:0 0 6px 2px }
+    input[type="text"], input[type="number"], textarea{
+      width:100%; padding:12px 12px; border-radius:12px; border:1px solid var(--border);
+      background:#0b1220; color:var(--text); outline:none;
+    }
+    input:focus, textarea:focus{ border-color:#2b3a55 }
+    textarea{ min-height:120px; resize:vertical }
+    .help{ color:var(--muted); font-size:12px; margin-top:6px }
+    .field-error{ color:var(--danger); font-size:12px; margin-top:6px }
+    .row{ display:flex; gap:10px; flex-wrap:wrap }
+    .footer{
+      display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:6px;
+      padding:20px 22px; border-top:1px solid var(--border); background:rgba(11,18,32,.7);
+    }
+    .msg{ color:var(--muted); font-size:12px }
+    .badge{
+      display:inline-block; padding:6px 10px; border-radius:999px; font-size:12px;
+      background:#0b1220; border:1px solid var(--border); color:var(--muted);
+      cursor:pointer; user-select:none; transition:all .15s ease;
+    }
+    .badge:hover{ color:#fff; border-color:#2b3a55 }
+    .opening-section{ display:grid; gap:12px }
+    .hours-grid{ display:grid; gap:12px; margin-top:12px }
+    @media (min-width: 700px){
+      .hours-grid{ grid-template-columns:repeat(2, minmax(0, 1fr)) }
+    }
+    @media (min-width: 1100px){
+      .hours-grid{ grid-template-columns:repeat(3, minmax(0, 1fr)) }
+    }
+    .day-block{
+      background:#0b1220; border:1px solid var(--border); border-radius:14px;
+      padding:14px 16px; display:grid; gap:12px; transition:all .2s ease;
+    }
+    .day-block.closed{ opacity:.55 }
+    .day-row{ display:flex; justify-content:space-between; align-items:center; gap:12px }
+    .day-name{ font-weight:600; font-size:15px; letter-spacing:.3px }
+    .state-switch{ display:flex; gap:8px; flex-wrap:wrap }
+    .state-btn{
+      padding:8px 14px; border-radius:999px; background:#111927; border:1px solid var(--border);
+      color:var(--muted); font-weight:600; cursor:pointer; transition:all .15s ease;
+    }
+    .state-btn.active{ background:var(--primary); color:#fff; border-color:transparent }
+    .time-row{ display:flex; gap:10px; flex-wrap:wrap }
+    .time-row label{ display:flex; flex-direction:column; gap:4px; font-size:13px; color:var(--muted) }
+    .time-row input[type="time"]{
+      padding:10px 12px; border-radius:10px; border:1px solid var(--border);
+      background:#0f1729; color:var(--text); min-width:140px;
+    }
+    .quick-actions{ justify-content:flex-start }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="head">
+        <div>
+          <h1 class="title">{% if mode == 'edit' %}Edit{% else %}Create{% endif %} Your Restaurant</h1>
+        <div class="sub">Fill in your details below. You can update these anytime.</div>
+        </div>
+        <div class="actions">
+          <!-- corrected url name -->
+          <a class="btn" href="{% url 'owner_dashboard' %}">&larr; Back to Dashboard</a>
+        </div>
+      </div>
+
+      <form method="post" id="restaurant-form">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="field-error">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="grid two">
+          <div>
+            <label for="{{ form.name.id_for_label }}">Name</label>
+            {{ form.name }}
+            {% for e in form.name.errors %}<div class="field-error">{{ e }}</div>{% endfor %}
+          </div>
+          <div>
+            <label for="{{ form.cuisine.id_for_label }}">Cuisine</label>
+            {{ form.cuisine }}
+            {% for e in form.cuisine.errors %}<div class="field-error">{{ e }}</div>{% endfor %}
+          </div>
+          <div>
+            <label for="{{ form.address.id_for_label }}">Address</label>
+            {{ form.address }}
+            {% for e in form.address.errors %}<div class="field-error">{{ e }}</div>{% endfor %}
+          </div>
+          <div>
+            <label for="{{ form.capacity.id_for_label }}">Capacity</label>
+            {{ form.capacity }}
+            {% for e in form.capacity.errors %}<div class="field-error">{{ e }}</div>{% endfor %}
+          </div>
+        </div>
+
+        <div>
+          <label for="{{ form.description.id_for_label }}">Description</label>
+          {{ form.description }}
+          {% for e in form.description.errors %}<div class="field-error">{{ e }}</div>{% endfor %}
+        </div>
+
+        <div class="opening-section">
+          <label for="{{ form.opening_hours.id_for_label }}">Opening hours</label>
+          <div class="help">Toggle which days you are open, then choose opening and closing times.</div>
+          {{ form.opening_hours }}
+          <div class="hours-grid" id="opening-hours-grid">
+            <div class="day-block" data-day="Mon">
+              <div class="day-row">
+                <span class="day-name">Mon</span>
+                <div class="state-switch">
+                  <button type="button" class="state-btn" data-set="open">Open</button>
+                  <button type="button" class="state-btn" data-set="closed">Closed</button>
+                </div>
+              </div>
+              <div class="time-row">
+                <label>Opens
+                  <input type="time" data-type="open" />
+                </label>
+                <label>Closes
+                  <input type="time" data-type="close" />
+                </label>
+              </div>
+            </div>
+            <div class="day-block" data-day="Tue">
+              <div class="day-row">
+                <span class="day-name">Tue</span>
+                <div class="state-switch">
+                  <button type="button" class="state-btn" data-set="open">Open</button>
+                  <button type="button" class="state-btn" data-set="closed">Closed</button>
+                </div>
+              </div>
+              <div class="time-row">
+                <label>Opens
+                  <input type="time" data-type="open" />
+                </label>
+                <label>Closes
+                  <input type="time" data-type="close" />
+                </label>
+              </div>
+            </div>
+            <div class="day-block" data-day="Wed">
+              <div class="day-row">
+                <span class="day-name">Wed</span>
+                <div class="state-switch">
+                  <button type="button" class="state-btn" data-set="open">Open</button>
+                  <button type="button" class="state-btn" data-set="closed">Closed</button>
+                </div>
+              </div>
+              <div class="time-row">
+                <label>Opens
+                  <input type="time" data-type="open" />
+                </label>
+                <label>Closes
+                  <input type="time" data-type="close" />
+                </label>
+              </div>
+            </div>
+            <div class="day-block" data-day="Thu">
+              <div class="day-row">
+                <span class="day-name">Thu</span>
+                <div class="state-switch">
+                  <button type="button" class="state-btn" data-set="open">Open</button>
+                  <button type="button" class="state-btn" data-set="closed">Closed</button>
+                </div>
+              </div>
+              <div class="time-row">
+                <label>Opens
+                  <input type="time" data-type="open" />
+                </label>
+                <label>Closes
+                  <input type="time" data-type="close" />
+                </label>
+              </div>
+            </div>
+            <div class="day-block" data-day="Fri">
+              <div class="day-row">
+                <span class="day-name">Fri</span>
+                <div class="state-switch">
+                  <button type="button" class="state-btn" data-set="open">Open</button>
+                  <button type="button" class="state-btn" data-set="closed">Closed</button>
+                </div>
+              </div>
+              <div class="time-row">
+                <label>Opens
+                  <input type="time" data-type="open" />
+                </label>
+                <label>Closes
+                  <input type="time" data-type="close" />
+                </label>
+              </div>
+            </div>
+            <div class="day-block" data-day="Sat">
+              <div class="day-row">
+                <span class="day-name">Sat</span>
+                <div class="state-switch">
+                  <button type="button" class="state-btn" data-set="open">Open</button>
+                  <button type="button" class="state-btn" data-set="closed">Closed</button>
+                </div>
+              </div>
+              <div class="time-row">
+                <label>Opens
+                  <input type="time" data-type="open" />
+                </label>
+                <label>Closes
+                  <input type="time" data-type="close" />
+                </label>
+              </div>
+            </div>
+            <div class="day-block" data-day="Sun">
+              <div class="day-row">
+                <span class="day-name">Sun</span>
+                <div class="state-switch">
+                  <button type="button" class="state-btn" data-set="open">Open</button>
+                  <button type="button" class="state-btn" data-set="closed">Closed</button>
+                </div>
+              </div>
+              <div class="time-row">
+                <label>Opens
+                  <input type="time" data-type="open" />
+                </label>
+                <label>Closes
+                  <input type="time" data-type="close" />
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="row quick-actions">
+            <span class="badge" data-preset="copy-mon">Copy Monday to all</span>
+            <span class="badge" id="clear-opening-hours">Clear all</span>
+          </div>
+          {% for e in form.opening_hours.errors %}<div class="field-error">{{ e }}</div>{% endfor %}
+        </div>
+
+        <div class="footer">
+          <div class="msg">
+            {% if mode == 'edit' %}
+              You are editing your existing restaurant.
+            {% else %}
+              You do not have a restaurant yet - create one now.
+            {% endif %}
+          </div>
+          <div class="row">
+            <!-- corrected url name -->
+            <a class="btn ghost" href="{% url 'owner_dashboard' %}">Cancel</a>
+            <button class="btn primary" type="submit">
+              {% if mode == 'edit' %}Save changes{% else %}Create{% endif %}
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const form = document.getElementById('restaurant-form');
+      const hiddenField = document.getElementById('opening-hours-input');
+      if(!form || !hiddenField){ return; }
+
+      let initialValue = {};
+      if(hiddenField.value){
+        try{
+          const parsed = JSON.parse(hiddenField.value);
+          if(parsed && typeof parsed === "object"){
+            initialValue = parsed;
+          }
+        }catch(err){
+          console.warn("Unable to parse existing opening hours JSON. Falling back to defaults.", err);
+        }
+      }
+
+      const controllers = Array.from(document.querySelectorAll('.day-block')).map((block) => {
+        const day = block.dataset.day;
+        const openButton = block.querySelector('[data-set="open"]');
+        const closedButton = block.querySelector('[data-set="closed"]');
+        const openInput = block.querySelector('input[data-type="open"]');
+        const closeInput = block.querySelector('input[data-type="close"]');
+
+        const setState = (state) => {
+          block.dataset.state = state;
+          if(state === 'open'){
+            block.classList.remove('closed');
+            openButton.classList.add('active');
+            closedButton.classList.remove('active');
+            openInput.disabled = false;
+            closeInput.disabled = false;
+          }else{
+            block.classList.add('closed');
+            openButton.classList.remove('active');
+            closedButton.classList.add('active');
+            openInput.disabled = true;
+            closeInput.disabled = true;
+          }
+        };
+
+        openButton.addEventListener('click', () => setState('open'));
+        closedButton.addEventListener('click', () => setState('closed'));
+
+        const existing = initialValue[day];
+        if(existing && typeof existing === "object"){
+          openInput.value = existing.open || "";
+          closeInput.value = existing.close || "";
+          setState('open');
+        }else{
+          setState('closed');
+        }
+
+        return { block, day, setState, openInput, closeInput };
+      });
+
+      const copyMondayButton = document.querySelector('[data-preset="copy-mon"]');
+      copyMondayButton?.addEventListener('click', () => {
+        const monday = controllers.find(ctrl => ctrl.day === 'Mon');
+        if(!monday){ return; }
+        const mondayState = monday.block.dataset.state;
+        controllers.forEach(ctrl => {
+          if(ctrl.day === 'Mon'){ return; }
+          if(mondayState === 'open'){
+            ctrl.setState('open');
+            ctrl.openInput.value = monday.openInput.value;
+            ctrl.closeInput.value = monday.closeInput.value;
+          }else{
+            ctrl.setState('closed');
+            ctrl.openInput.value = "";
+            ctrl.closeInput.value = "";
+          }
+        });
+      });
+
+      document.getElementById('clear-opening-hours')?.addEventListener('click', () => {
+        controllers.forEach(ctrl => {
+          ctrl.openInput.value = "";
+          ctrl.closeInput.value = "";
+          ctrl.setState('closed');
+        });
+        hiddenField.value = "";
+      });
+
+      form.addEventListener('submit', (evt) => {
+        const payload = {};
+        let errorMessage = "";
+
+        controllers.forEach(ctrl => {
+          if(errorMessage){ return; }
+          const state = ctrl.block.dataset.state;
+          if(state !== 'open'){ return; }
+
+          const open = (ctrl.openInput.value || "").trim();
+          const close = (ctrl.closeInput.value || "").trim();
+
+          if(!open || !close){
+            errorMessage = `${ctrl.day}: please fill both opening and closing times or mark the day as closed.`;
+            return;
+          }
+          if(open >= close){
+            errorMessage = `${ctrl.day}: closing time must be after opening time.`;
+            return;
+          }
+          payload[ctrl.day] = { open, close };
+        });
+
+        if(errorMessage){
+          evt.preventDefault();
+          alert(errorMessage);
+          return;
+        }
+
+        hiddenField.value = Object.keys(payload).length ? JSON.stringify(payload) : "";
+      });
+    })();
+  </script>
+</body>
+</html>
