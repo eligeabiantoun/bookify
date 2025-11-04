@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "restaurants",
     "accounts",
 ]
 
@@ -123,8 +124,17 @@ AUTHENTICATION_BACKENDS = [
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
-LOGIN_URL = "login"
-LOGIN_REDIRECT_URL = "post_login"
-LOGOUT_REDIRECT_URL = '/'
+# Make sure these exist for dev
+LOGIN_URL = "/login/"
+LOGIN_REDIRECT_URL = "/post-login/"
+LOGOUT_REDIRECT_URL = "/"
+
+# Optional but helpful for localhost dev
+CSRF_TRUSTED_ORIGINS = [
+    "http://127.0.0.1:8000",
+    "http://localhost:8000",
+]
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False  
 
 

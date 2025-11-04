@@ -1,10 +1,383 @@
-<h1>Owner dashboard</h1>
-<p><a href="/auth/invitations/create">Invite staff</a></p>
-<nav style="margin:0 0 16px 0;">
-  <a href="{% url 'home' %}"
-     style="display:inline-block;padding:8px 12px;border:1px solid #d0dff0;border-radius:10px;
-            text-decoration:none;font-weight:600;color:#1e73be;background:#fff;">
-    ← Go back to Home
-  </a>
-</nav>
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Owner Dashboard - Bookify</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: rgba(17,24,39,0.85);
+      --border: #1f2937;
+      --muted: #94a3b8;
+      --text: #e5e7eb;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --ok: #22c55e;
+      --warn: #f59e0b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--text);
+      background: radial-gradient(1200px 700px at 20% -20%, #1f2937 0, transparent 60%), var(--bg);
+    }
+    a { color: inherit; }
+    .wrap { max-width: 1140px; margin: 0 auto; padding: 32px 20px 48px; }
+    .top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #2563eb, #9333ea);
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      color: #fff;
+      box-shadow: 0 12px 32px rgba(37, 99, 235, 0.35);
+    }
+    h1 { margin: 0; font-size: 30px; letter-spacing: 0.2px; }
+    .sub { margin: 4px 0 0; font-size: 14px; color: var(--muted); }
+    .actions { display: flex; gap: 12px; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #0b1220;
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 600;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+    .btn:hover { background: #101a2e; border-color: #273244; }
+    .btn.primary { background: var(--primary); border-color: transparent; color: #fff; }
+    .btn.primary:hover { background: var(--primary-dark); }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 18px;
+    }
+    .card {
+      grid-column: span 12;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 20px 22px 24px;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 18px 46px rgba(0, 0, 0, 0.35);
+    }
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .card h2 { margin: 0; font-size: 20px; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      border: 1px solid var(--border);
+      background: #0b1220;
+      color: var(--muted);
+    }
+    .badge.ok { color: var(--ok); }
+    .badge.warn { color: var(--warn); }
+    .flash {
+      margin-bottom: 20px;
+      padding: 16px 18px;
+      border-radius: 14px;
+      border: 1px solid #1f2a44;
+      background: rgba(20, 32, 54, 0.85);
+    }
+    .ghost { color: var(--muted); font-size: 14px; }
+    .ghost.small { font-size: 12px; word-break: break-all; }
+    .details {
+      display: grid;
+      gap: 10px;
+      margin: 0 0 18px;
+    }
+    .details div { display: grid; gap: 4px; }
+    .details dt { font-size: 12px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); }
+    .details dd { margin: 0; font-size: 16px; }
+    .hours {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 16px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .hours th, .hours td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      font-size: 14px;
+    }
+    .hours tr:last-child th,
+    .hours tr:last-child td { border-bottom: none; }
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--muted);
+      margin: 6px 0 12px;
+    }
+    .actions-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    .invite-form { margin-bottom: 16px; display: grid; gap: 10px; }
+    .invite-form label { font-size: 13px; font-weight: 600; color: var(--muted); }
+    .form-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .form-row input[type="email"] {
+      flex: 1 1 220px;
+      min-width: 0;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #0b1220;
+      color: var(--text);
+    }
+    .form-row input[type="email"]:focus {
+      outline: none;
+      border-color: #2c3a55;
+    }
+    .list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      gap: 12px;
+    }
+    .list li {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(12, 20, 34, 0.8);
+    }
+    .summary {
+      margin-top: 16px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .foot {
+      margin-top: 28px;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    @media (min-width: 920px) {
+      .card.span-7 { grid-column: span 7; }
+      .card.span-5 { grid-column: span 5; }
+      .card.span-12 { grid-column: span 12; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <div class="brand">
+        <div class="logo">B</div>
+        <div>
+          <h1>Owner Dashboard</h1>
+          <p class="sub">Manage your restaurant, team, and bookings.</p>
+        </div>
+      </div>
+      <nav class="actions">
+        <a href="{% url 'home' %}" class="btn">&larr; Home</a>
+        <a href="{% url 'logout' %}" class="btn">Logout</a>
+      </nav>
+    </header>
 
+    {% if messages %}
+      <div class="flash" role="alert">
+        {% for message in messages %}
+          <div>{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <section class="grid">
+      <article class="card span-7">
+        <div class="card-head">
+          <h2>My Restaurant</h2>
+          {% if has_restaurant %}
+            <span class="badge ok">Active</span>
+          {% else %}
+            <span class="badge warn">Setup needed</span>
+          {% endif %}
+        </div>
+
+        {% if has_restaurant %}
+          <dl class="details">
+            <div>
+              <dt>Name</dt>
+              <dd>{{ restaurant.name }}</dd>
+            </div>
+            <div>
+              <dt>Cuisine</dt>
+              <dd>{{ restaurant.cuisine }}</dd>
+            </div>
+            <div>
+              <dt>Address</dt>
+              <dd>{{ restaurant.address }}</dd>
+            </div>
+            <div>
+              <dt>Capacity</dt>
+              <dd>{{ restaurant.capacity }} seats</dd>
+            </div>
+            <div>
+              <dt>Rating</dt>
+              <dd>{{ restaurant.rating }}</dd>
+            </div>
+            <div>
+              <dt>Description</dt>
+              <dd>
+                {% if restaurant.description %}
+                  {{ restaurant.description }}
+                {% else %}
+                  <span class="ghost">Not set yet</span>
+                {% endif %}
+              </dd>
+            </div>
+          </dl>
+
+          <div class="section-title">Opening hours</div>
+          {% if opening_hours_rows %}
+            <table class="hours">
+              <tbody>
+                {% for day, span in opening_hours_rows %}
+                  <tr>
+                    <th>{{ day }}</th>
+                    <td>{{ span }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          {% else %}
+            <p class="ghost">Add opening hours so guests know when you are open.</p>
+          {% endif %}
+
+          <div class="actions-row">
+            <a href="{% url 'owner_restaurant_edit' %}" class="btn primary">Edit details</a>
+            <a href="{% url 'owner_restaurant_edit' %}" class="btn">Update opening hours</a>
+          </div>
+        {% else %}
+          <p class="ghost">Set up your restaurant profile to start receiving bookings.</p>
+          <a href="{% url 'owner_restaurant_create' %}" class="btn primary">Create my restaurant</a>
+        {% endif %}
+      </article>
+
+      <article class="card span-5">
+        <div class="card-head">
+          <h2>Team and Staff</h2>
+        </div>
+
+        {% if has_restaurant %}
+          <form method="post" action="{{ invite_create_url }}" class="invite-form">
+            {% csrf_token %}
+            <label for="invite-email">Invite a team member</label>
+            <div class="form-row">
+              <input type="email" id="invite-email" name="email" placeholder="staff@example.com" required />
+              <button type="submit" class="btn primary">Send</button>
+            </div>
+          </form>
+        {% else %}
+          <p class="ghost">Create your restaurant to start inviting staff.</p>
+        {% endif %}
+
+        <div class="section-title">Pending invitations</div>
+        {% if active_invites %}
+          <ul class="list">
+            {% for invite in active_invites %}
+              <li>
+                <div>
+                  <strong>{{ invite.obj.email }}</strong>
+                  <div class="ghost">Sent {{ invite.created_display }} ago - expires in {{ invite.expires_display }}</div>
+                  <div class="ghost small">{{ invite.link }}</div>
+                </div>
+                <span class="badge ok">Open</span>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="ghost">No pending invites right now.</p>
+        {% endif %}
+
+        {% if expired_invites %}
+          <div class="section-title">Recently expired</div>
+          <ul class="list">
+            {% for invite in expired_invites %}
+              <li>
+                <div>
+                  <strong>{{ invite.obj.email }}</strong>
+                  <div class="ghost">Expired {{ invite.expires_display }} ago</div>
+                </div>
+                <span class="badge warn">Expired</span>
+              </li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+
+        <div class="summary">
+          Accepted invites so far: {{ accepted_invite_count }}
+        </div>
+      </article>
+
+      <article class="card span-12">
+        <div class="card-head">
+          <h2>Bookings</h2>
+          <span class="badge warn">In progress</span>
+        </div>
+        <p class="ghost">
+          Booking management will arrive in the next release. You will see upcoming reservations,
+          manage seating, and notify guests from this dashboard.
+        </p>
+        <div class="actions-row">
+          <a href="{{ contact_support_url }}" class="btn">Contact support</a>
+          {% if has_restaurant %}
+            <a href="{% url 'owner_restaurant_edit' %}" class="btn">Review availability</a>
+          {% else %}
+            <a href="{% url 'owner_restaurant_create' %}" class="btn">Create restaurant</a>
+          {% endif %}
+        </div>
+      </article>
+    </section>
+
+    <footer class="foot">
+      <span>Bookify Owner Portal</span>
+      <span>{{ request.user.email }}</span>
+    </footer>
+  </div>
+</body>
+</html>
