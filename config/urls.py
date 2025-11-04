@@ -42,4 +42,7 @@ urlpatterns = [
     # 🔹 ADD THIS LINE: mounts your restaurants API at /api/
     path("api/", include("restaurants.urls")),
     path("", include("restaurants.urls_site")),
+
+    path("restaurants/", include("restaurants.urls")),
+
 ]

@@ -1,0 +1,44 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{{ restaurant.name }} • Bookify</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root{--bg:#0f172a;--panel:#111827;--muted:#94a3b8;--text:#e5e7eb;--primary:#2563eb;--border:#1f2937;}
+    body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text);
+         background:radial-gradient(1200px 700px at 20% -20%, #1f2937 0, transparent 60%), var(--bg);}
+    .wrap{max-width:900px;margin:0 auto;padding:28px 18px}
+    .panel{background:rgba(17,24,39,.8);border:1px solid var(--border);border-radius:16px;padding:18px}
+    .btn{display:inline-flex;align-items:center;padding:10px 14px;border-radius:12px;border:1px solid var(--border);
+         background:#0b1220;color:#e5e7eb;text-decoration:none;font-weight:600}
+    .btn.primary{background:#2563eb;border-color:transparent;color:#fff}
+    .meta{color:#94a3b8}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <p><a class="btn" href="{% url 'restaurant_browse' %}">← Back to list</a></p>
+
+    <div class="panel">
+      <h1 style="margin:0 0 6px 0">{{ restaurant.name }}</h1>
+      <p class="meta">{{ restaurant.cuisine }} • {{ restaurant.address }} • Seats {{ restaurant.capacity }}</p>
+      {% if restaurant.description %}
+      <p style="margin-top:14px">{{ restaurant.description }}</p>
+      {% endif %}
+
+      <p class="meta" style="margin-top:8px">
+        Open {{ restaurant.opening_time|time:"H:i" }} — {{ restaurant.closing_time|time:"H:i" }}
+      </p>
+
+      {% if user.is_authenticated %}
+        <!-- Placeholder for your booking flow -->
+        <a class="btn primary" href="#">Start booking</a>
+      {% else %}
+        <a class="btn primary" href="{% url 'login' %}?next={{ request.path }}">Log in to book</a>
+      {% endif %}
+    </div>
+  </div>
+</body>
+</html>
