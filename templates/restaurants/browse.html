@@ -1,0 +1,87 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Browse Restaurants • Bookify</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root{--bg:#0f172a;--panel:#111827;--muted:#94a3b8;--text:#e5e7eb;--primary:#2563eb;--border:#1f2937;}
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--text);
+      background:radial-gradient(1200px 700px at 20% -20%, #1f2937 0, transparent 60%), var(--bg);
+    }
+    .wrap{max-width:1100px;margin:0 auto;padding:28px 18px}
+    header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+    .title{font-size:22px;margin:0}
+    .btn{
+      display:inline-flex;align-items:center;padding:10px 14px;border-radius:12px;
+      border:1px solid var(--border);background:#0b1220;color:var(--text);text-decoration:none;font-weight:600
+    }
+    .btn.primary{background:var(--primary);border-color:transparent;color:#fff}
+    .panel{background:rgba(17,24,39,.8);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:16px}
+    .filters{display:grid;grid-template-columns:1fr 1fr auto;gap:10px}
+    input{width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:#0b1220;color:var(--text)}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
+    .card{
+      grid-column:span 12;background:rgba(17,24,39,.75);border:1px solid var(--border);
+      border-radius:14px;padding:14px;display:flex;gap:14px
+    }
+    .name{font-size:18px;font-weight:800;margin:0 0 6px 0}
+    .meta{color:var(--muted);font-size:13px}
+    .grow{flex:1}
+    @media (min-width:800px){ .card{grid-column:span 6} }
+    @media (min-width:1050px){ .card{grid-column:span 4} }
+    .actions{display:flex;gap:10px;align-items:center}
+    .muted{color:var(--muted);font-size:12px}
+    .pill{padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:#0b1220;font-size:12px;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1 class="title">Browse Restaurants</h1>
+      <div>
+        <a href="{% url 'home' %}" class="btn">← Home</a>
+        {% if user.is_authenticated %}
+          <a href="{% url 'logout' %}" class="btn">Logout</a>
+        {% else %}
+          <a href="{% url 'login' %}" class="btn">Log in</a>
+        {% endif %}
+      </div>
+    </header>
+
+    <div class="panel">
+      <form class="filters" method="get">
+        <input type="text" name="q" placeholder="Search by name or address…" value="{{ q }}">
+        <input type="text" name="cuisine" placeholder="Cuisine (e.g., Italian, Sushi…)" value="{{ cuisine }}">
+        <button class="btn primary" type="submit">Search</button>
+      </form>
+    </div>
+
+    <section class="grid">
+      {% for r in restaurants %}
+        <article class="card">
+          <div class="grow">
+            <h3 class="name">{{ r.name }}</h3>
+            <div class="meta">{{ r.cuisine }} • {{ r.address }} • Seats {{ r.capacity }}</div>
+            {% if r.description %}
+              <p class="muted" style="margin:8px 0 0">{{ r.description|truncatechars:140 }}</p>
+            {% endif %}
+          </div>
+          <div class="actions">
+            <!-- Always send users to login; they'll return to this page after -->
+            <a class="btn primary" href="{% url 'login' %}?next={{ request.path }}">Book now</a>
+            <span class="pill">Opens {{ r.opening_time|time:"H:i" }} • Closes {{ r.closing_time|time:"H:i" }}</span>
+          </div>
+        </article>
+      {% empty %}
+        <div class="panel">No restaurants found. Try a different search.</div>
+      {% endfor %}
+    </section>
+  </div>
+</body>
+</html>

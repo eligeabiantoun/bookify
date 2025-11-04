@@ -7,6 +7,7 @@ from .models import Restaurant
 from .serializers import RestaurantSerializer
 from .permissions import IsOwnerOrReadOnly
 
+
 class RestaurantViewSet(viewsets.ModelViewSet):
     """
     REST API for restaurants.
@@ -28,11 +29,11 @@ class RestaurantViewSet(viewsets.ModelViewSet):
 
 
 # ---------- Site views (HTML pages for owners) ----------
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
-from accounts.decorators import owner_required  # requires accounts/decorators.py from earlier step
+from accounts.decorators import owner_required
 from .forms import RestaurantForm
 
 
@@ -93,48 +94,41 @@ def owner_restaurant_edit(request):
     )
 
 
-def browse_restaurants(request):
+# ---------- Public browse & detail views (for guests) ----------
+from django.views.generic import ListView, DetailView
+
+
+class PublicRestaurantListView(ListView):
     """
-    Public browse page so guests can explore restaurants without signing up.
-    Provides basic search/filter controls in the template.
+    Public list view: anyone can browse restaurants without logging in.
     """
-    query = (request.GET.get("q") or "").strip()
-    cuisine_filter = (request.GET.get("cuisine") or "").strip()
-    sort = (request.GET.get("sort") or "rating").lower()
+    template_name = "restaurants/browse.html"
+    model = Restaurant
+    context_object_name = "restaurants"
+    paginate_by = 12
 
-    restaurants = Restaurant.objects.all()
+    def get_queryset(self):
+        qs = Restaurant.objects.all().order_by("name")
+        q = self.request.GET.get("q", "").strip()
+        cuisine = self.request.GET.get("cuisine", "").strip()
+        if q:
+            qs = qs.filter(Q(name__icontains=q) | Q(address__icontains=q))
+        if cuisine:
+            qs = qs.filter(cuisine__icontains=cuisine)
+        return qs
 
-    if query:
-        restaurants = restaurants.filter(
-            Q(name__icontains=query)
-            | Q(cuisine__icontains=query)
-            | Q(address__icontains=query)
-        )
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["q"] = self.request.GET.get("q", "").strip()
+        ctx["cuisine"] = self.request.GET.get("cuisine", "").strip()
+        return ctx
 
-    if cuisine_filter:
-        restaurants = restaurants.filter(cuisine__iexact=cuisine_filter)
 
-    sort_map = {
-        "rating": ("-rating", "name"),
-        "name": ("name",),
-        "newest": ("-id",),
-    }
-    restaurants = restaurants.order_by(*sort_map.get(sort, ("-rating", "name")))
-
-    cuisines = (
-        Restaurant.objects.order_by("cuisine")
-        .values_list("cuisine", flat=True)
-        .distinct()
-    )
-
-    return render(
-        request,
-        "restaurants/browse.html",
-        {
-            "restaurants": restaurants,
-            "query": query,
-            "cuisines": cuisines,
-            "active_cuisine": cuisine_filter,
-            "active_sort": sort if sort in sort_map else "rating",
-        },
-    )
+class PublicRestaurantDetailView(DetailView):
+    """
+    Public detail page: anyone can view restaurant details.
+    Shows 'Log in to book' if user is not authenticated.
+    """
+    template_name = "restaurants/detail.html"
+    model = Restaurant
+    context_object_name = "restaurant"
