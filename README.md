@@ -1,21 +1,30 @@
-# bookify
-Bookify is a web application that allows users to discover, browse, and reserve tables at restaurants. It currently features a clean homepage with quick access to sign-up, log-in, and browse options. Each user role Owner, Customer, and Staff has its own dashboard with a ← Home button for easy navigation. The project uses simple HTML/CSS templates, and clean URL routing where the root path displays the new home.html design.
+# Bookify
 
-We are currently in Sprint 1, focusing on setting up the core architecture, authentication system, and basic user dashboards.
-In Sprints 2 and 3, we will continue to develop and integrate all MVP features, including real-time queue management, reservation confirmation, restaurant analytics, and an enhanced user interface.
+Bookify is a web-based application designed to allow users to discover, browse, and reserve tables at restaurants through a simple and intuitive interface. The platform provides a clean homepage that offers quick access to the main user actions, including sign-up, log-in, and browsing options. Each user role, namely Owner, Customer, and Admin, has access to a dedicated dashboard with personalized functionality and a clear navigation structure that enhances the overall user experience.
 
-To run Bookify locally:
+The project aims to establish a complete restaurant booking and management system that integrates essential functionalities such as role-based dashboards, table reservations, real-time queue management, reservation confirmations, and restaurant performance analytics. The interface is structured to be responsive and user-friendly, ensuring accessibility and ease of use across various devices. The design philosophy emphasizes scalability, maintainability, and a clean separation between the front-end presentation and back-end logic.
 
-Create and activate a virtual environment.
+At its current stage, Bookify is in Sprint 2, which focuses on continuing with the project’s core architecture, implementing the authentication system, and developing the initial user dashboards. In the upcoming sprints, the team will focus on building and integrating the main MVP features, including real-time queue management, restaurant analytics, and further user interface enhancements that will collectively shape the platform into a complete reservation system.
 
-Install dependencies with pip install -r requirements.txt or pip install django.
+To run Bookify locally on macOS or Linux, the user should begin by cloning the repository using the command  
+`git clone https://github.com/eligeabiantoun/bookify.git`  
+and then navigate into the project directory using `cd bookify`. A virtual environment must then be created and activated with  
+`python3 -m venv venv`  
+followed by  
+`source venv/bin/activate`.  
+Once activated, dependencies can be installed using  
+`pip install -r requirements.txt`.  
+After installing all dependencies, the user should apply database migrations with  
+`python3 manage.py migrate`  
+and start the local development server by executing  
+`python3 manage.py runserver`.  
+The application can then be accessed in a web browser at http://127.0.0.1:8000/.
 
-Run migrations: python manage.py migrate.
+The Bookify application is developed using the Django framework in Python for the backend and utilizes HTML and CSS for the front-end design, with future plans to integrate Tailwind CSS for improved visual consistency and responsiveness. The project uses SQLite as the default database for local development and PostgreSQL for production environments. Version control is managed through Git and GitHub to ensure structured collaboration and seamless tracking of development progress. The development workflow is primarily executed on macOS systems.
 
-Start the development server: python manage.py runserver.
-Then open http://127.0.0.1:8000/
- to explore the app.
+Bookify represents the foundation of a scalable, feature-rich restaurant booking platform that emphasizes structured design, clarity, and effective collaboration. It is being developed as part of a broader roadmap that envisions continuous improvement, advanced analytics, and integration of modern web technologies. The project reflects the team’s commitment to creating a practical solution that aligns technical precision with user-centric design.
 
-Bookify represents the foundation of a complete restaurant booking system emphasizing clear structure, user roles, and an evolving product roadmap.
-THANK YOU
-COLLABORATORS: Rasha Al Annan, Elige Abi Antoun, Elodie El Feghali, Ralph Nasr, Nathalio Hassoun
+Collaborators: Rasha Al Annan, Elige Abi Antoun, Elodie El Feghali, Ralph Nasr, and Nathalio Hassoun.
+
+Thank you for exploring Bookify.
+
