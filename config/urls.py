@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import TemplateView
 from accounts import views as a
+from django.contrib.auth import views as auth_views  # ✅ correct import
 
 urlpatterns = [
     # Home
@@ -24,22 +25,22 @@ urlpatterns = [
     # Password reset flow (Django auth views)
     path(
         "password-reset/",
-        a.auth_views.PasswordResetView.as_view(template_name="accounts/password_reset.html"),
+        auth_views.PasswordResetView.as_view(template_name="accounts/password_reset.html"),
         name="password_reset",
     ),
     path(
         "password-reset/done/",
-        a.auth_views.PasswordResetDoneView.as_view(template_name="accounts/password_reset_done.html"),
+        auth_views.PasswordResetDoneView.as_view(template_name="accounts/password_reset_done.html"),
         name="password_reset_done",
     ),
     path(
         "reset/<uidb64>/<token>/",
-        a.auth_views.PasswordResetConfirmView.as_view(template_name="accounts/password_reset_confirm.html"),
+        auth_views.PasswordResetConfirmView.as_view(template_name="accounts/password_reset_confirm.html"),
         name="password_reset_confirm",
     ),
     path(
         "reset/done/",
-        a.auth_views.PasswordResetCompleteView.as_view(template_name="accounts/password_reset_complete.html"),
+        auth_views.PasswordResetCompleteView.as_view(template_name="accounts/password_reset_complete.html"),
         name="password_reset_complete",
     ),
 
@@ -53,16 +54,13 @@ urlpatterns = [
     path("dashboard/owner/", a.owner_dashboard, name="owner_dashboard"),
     path("dashboard/staff/", a.staff_dashboard, name="staff_dashboard"),
 
-    # Built-in auth URLs (login/logout/password change, etc.)
+    # Built-in auth URLs
     path("accounts/", include("django.contrib.auth.urls")),
 
     # ---------- Restaurants ----------
-    # Public site pages (e.g., /browse/, /<id>/) — keep browse inside restaurants app
-    path("", include("restaurants.urls_site")),
+    # Public site pages (e.g., /browse/, /<id>/)
+    path("", include("restaurants.urls")),  # your restaurants/urls.py has browse + detail
 
-    # Owner/staff site pages under /restaurants/ (non-API pages)
-    path("restaurants/", include("restaurants.urls")),
-
-    # API mounted once at /api/ (ensure you created restaurants/api_urls.py with DRF router)
+    # API mounted once at /api/ (requires restaurants/api_urls.py)
     path("api/", include("restaurants.api_urls")),
 ]
