@@ -74,11 +74,17 @@ TEMPLATES = [
 # DATABASE (SQLite for Sprint 1)
 # ---------------------------------------------------------------------
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
+    "default": env.db(
+        "DATABASE_URL",
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+    )
 }
+
+# If your provider requires SSL (Neon usually does), either ensure
+# ?sslmode=require is in the URL OR force it here:
+if DATABASES["default"]["ENGINE"].endswith("postgresql") and \
+   "OPTIONS" not in DATABASES["default"]:
+    DATABASES["default"]["OPTIONS"] = {"sslmode": "require"}
 
 # ---------------------------------------------------------------------
 # PASSWORD VALIDATORS
