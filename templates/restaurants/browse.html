@@ -5,74 +5,136 @@
   <meta charset="utf-8">
   <title>Browse Restaurants • Bookify</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
   <style>
-    :root{--bg:#0f172a;--panel:#111827;--muted:#94a3b8;--text:#e5e7eb;--primary:#2563eb;--border:#1f2937;}
+    :root{
+      --bg:#f7f7f8; --panel:#fff; --text:#1f2328; --muted:#667085; --line:#e6e7eb;
+      --brand:#ff7a1a; --brand-600:#ff6a00; --brand-50:#fff4eb;
+      --radius:18px; --shadow:0 6px 24px rgba(0,0,0,.06); --shadow-sm:0 1px 3px rgba(0,0,0,.06);
+    }
     *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      color:var(--text);
-      background:radial-gradient(1200px 700px at 20% -20%, #1f2937 0, transparent 60%), var(--bg);
-    }
-    .wrap{max-width:1100px;margin:0 auto;padding:28px 18px}
-    header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-    .title{font-size:22px;margin:0}
+    body{margin:0;background:var(--bg);color:var(--text);
+         font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+    .wrap{max-width:1120px;margin:0 auto;padding:28px 18px}
+
+    header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+    .title{font-size:32px;font-weight:800;margin:0}
+    .bar{display:flex;gap:10px;align-items:center}
+    a{color:inherit;text-decoration:none}
+
+    /* Buttons (smaller) */
     .btn{
-      display:inline-flex;align-items:center;padding:10px 14px;border-radius:12px;
-      border:1px solid var(--border);background:#0b1220;color:var(--text);text-decoration:none;font-weight:600
+      display:inline-flex;align-items:center;justify-content:center;gap:8px;
+      height:36px;padding:0 12px;border-radius:10px;border:1px solid var(--line);
+      background:var(--panel);font-weight:600;font-size:14px;box-shadow:var(--shadow-sm);white-space:nowrap
     }
-    .btn.primary{background:var(--primary);border-color:transparent;color:#fff}
-    .panel{background:rgba(17,24,39,.8);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:16px}
-    .filters{display:grid;grid-template-columns:1fr 1fr auto;gap:10px}
-    input{width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:#0b1220;color:var(--text)}
-    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
+    .btn:hover{background:#fcfcfc}
+    .btn.brand{background:var(--brand);border-color:var(--brand);color:#fff}
+    .btn.brand:hover{background:var(--brand-600)}
+    .btn.ghost{background:transparent}
+    .btn.full{width:100%}
+
+    /* Filters */
+    .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:12px;box-shadow:var(--shadow)}
+    .filters{display:grid;grid-template-columns:2fr 1.4fr auto;gap:10px}
+    input{width:100%;height:44px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:#fff}
+    .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .chip{height:32px;padding:0 12px;border-radius:999px;background:#f3f4f6;border:1px solid var(--line);font-size:13px}
+    .chip:hover{background:#eef0f3}
+
+    /* Grid & cards */
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:18px;margin-top:18px}
     .card{
-      grid-column:span 12;background:rgba(17,24,39,.75);border:1px solid var(--border);
-      border-radius:14px;padding:14px;display:flex;gap:14px
+      grid-column:span 12;
+      display:flex;align-items:stretch;gap:16px;
+      background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+      padding:16px;box-shadow:var(--shadow);
+      min-height:150px; /* keep tidy; name can wrap */
+      transition:transform .12s ease, box-shadow .12s ease;
     }
-    .name{font-size:18px;font-weight:800;margin:0 0 6px 0}
-    .meta{color:var(--muted);font-size:13px}
-    .grow{flex:1}
-    @media (min-width:800px){ .card{grid-column:span 6} }
-    @media (min-width:1050px){ .card{grid-column:span 4} }
-    .actions{display:flex;gap:10px;align-items:center}
-    .muted{color:var(--muted);font-size:12px}
-    .pill{padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:#0b1220;font-size:12px;color:var(--muted)}
+    .card:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(0,0,0,.08)}
+    @media (min-width:860px){ .card{grid-column:span 6} }
+    @media (min-width:1120px){ .card{grid-column:span 4} }
+
+    /* Left thumbnail (smaller) */
+    .thumb{
+      flex:0 0 72px;height:72px;border-radius:12px;background:var(--brand-50);
+      display:grid;place-items:center;font-weight:800;color:var(--brand);font-size:18px;border:1px solid #ffe2c8;
+      align-self:center;
+    }
+
+    /* Middle info */
+    .info{flex:1;display:flex;flex-direction:column;justify-content:center;min-width:0}
+    .name{
+      font-size:17px;font-weight:800;margin:0 0 6px 0;line-height:1.2;
+      /* SHOW FULL NAME: no clamp, wrap freely */
+      white-space:normal; overflow-wrap:anywhere;
+    }
+    .meta{color:var(--muted);font-size:13px;line-height:1.35}
+    .meta-row{display:flex;gap:.45rem;flex-wrap:wrap}
+    .dot::before{content:"•";color:#c0c3c7}
+
+    /* Right column (narrower + smaller elements) */
+    .actions{flex:0 0 140px;display:flex;flex-direction:column;gap:8px}
+    .spacer{flex:1}
+    .badge{
+      align-self:stretch;height:24px;display:grid;place-items:center;
+      padding:0 10px;border-radius:999px;background:var(--brand-50);color:#b45309;
+      border:1px solid #ffd7b0;font-size:11px;white-space:nowrap
+    }
+
+    .sr{position:absolute;left:-9999px}
   </style>
 </head>
 <body>
   <div class="wrap">
     <header>
       <h1 class="title">Browse Restaurants</h1>
-      <div>
-        <a href="{% url 'home' %}" class="btn">← Home</a>
-        <!-- Guests: after login, land on the customer dashboard -->
+      <div class="bar">
+        <a href="{% url 'home' %}" class="btn ghost">← Home</a>
         <a href="{% url 'login' %}?next={% url 'customer_dashboard' %}" class="btn">Log in</a>
       </div>
     </header>
 
-    <div class="panel">
+    <div class="panel" role="region" aria-label="Filters">
       <form class="filters" method="get">
-        <input type="text" name="q" placeholder="Search by name or address…" value="{{ q }}">
-        <input type="text" name="cuisine" placeholder="Cuisine (e.g., Italian, Sushi…)" value="{{ cuisine }}">
-        <button class="btn primary" type="submit">Search</button>
+        <label class="sr" for="q">Search</label>
+        <input id="q" type="text" name="q" placeholder="Search by name or address…" value="{{ q|default:'' }}">
+        <label class="sr" for="cuisine">Cuisine</label>
+        <input id="cuisine" type="text" name="cuisine" placeholder="Cuisine (e.g., Italian, Sushi…)" value="{{ cuisine|default:'' }}">
+        <button class="btn brand" type="submit">Search</button>
       </form>
+      <div class="chips" aria-label="Quick categories">
+        <button name="cuisine" value="Lebanese" class="chip" formmethod="get">Lebanese</button>
+        <button name="cuisine" value="Burger"   class="chip" formmethod="get">Burger</button>
+        <button name="cuisine" value="Sushi"    class="chip" formmethod="get">Sushi</button>
+        <button name="cuisine" value="Pizza"    class="chip" formmethod="get">Pizza</button>
+        <button name="cuisine" value="Cafe"     class="chip" formmethod="get">Cafe</button>
+      </div>
     </div>
 
-    <section class="grid">
+    <section class="grid" aria-label="Restaurant results">
       {% for r in restaurants %}
         <article class="card">
-          <div class="grow">
+          <!-- Left -->
+          <div class="thumb" aria-hidden="true">{{ r.name|slice:":1" }}</div>
+
+          <!-- Middle: full name + cuisine + address (no description) -->
+          <div class="info">
             <h3 class="name">{{ r.name }}</h3>
-            <div class="meta">{{ r.cuisine }} • {{ r.address }} • Seats {{ r.capacity }}</div>
-            {% if r.description %}
-              <p class="muted" style="margin:8px 0 0">{{ r.description|truncatechars:140 }}</p>
-            {% endif %}
+            <div class="meta">
+              <div class="meta-row">
+                <span>{{ r.cuisine }}</span><span class="dot"></span><span>{{ r.address }}</span>
+              </div>
+            </div>
           </div>
+
+          <!-- Right: smaller buttons + small badge (all inside card) -->
           <div class="actions">
-            <!-- Always send to login; after login → customer dashboard -->
-            <a class="btn primary" href="{% url 'login' %}?next={% url 'customer_dashboard' %}">Book now</a>
-            <span class="pill">Opens {{ r.opening_time|time:"H:i" }} • Closes {{ r.closing_time|time:"H:i" }}</span>
+            <a class="btn brand full" href="{% url 'login' %}?next={% url 'customer_dashboard' %}">Book now</a>
+            <a class="btn full" href="{% url 'restaurant_detail' r.id %}#hours">More info</a>
+            <div class="spacer"></div>
+            <div class="badge">Open {{ r.opening_time|time:"H:i" }} — {{ r.closing_time|time:"H:i" }}</div>
           </div>
         </article>
       {% empty %}

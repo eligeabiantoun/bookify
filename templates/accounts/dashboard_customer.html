@@ -3,590 +3,211 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Customer Dashboard - Bookify</title>
+  <title>Customer Dashboard • Bookify</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    :root {
-      --bg: #0f172a;
-      --panel: rgba(17, 24, 39, 0.85);
-      --border: #1f2937;
-      --border-soft: #273347;
-      --muted: #94a3b8;
-      --text: #e5e7eb;
-      --primary: #2563eb;
-      --primary-dark: #1d4ed8;
-      --ok: #22c55e;
-      --warn: #f59e0b;
-      --danger: #ef4444;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      color: var(--text);
-      background: radial-gradient(1200px 700px at 20% -20%, #1f2937 0, transparent 60%), var(--bg);
-      min-height: 100vh;
-    }
-    a { color: inherit; }
-    .wrap {
-      max-width: 1180px;
-      margin: 0 auto;
-      padding: 32px 20px 48px;
-    }
-    .top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      margin-bottom: 24px;
-      flex-wrap: wrap;
-    }
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-    .logo {
-      width: 46px;
-      height: 46px;
-      border-radius: 15px;
-      background: linear-gradient(135deg, #2563eb, #9333ea);
-      display: grid;
-      place-items: center;
-      font-weight: 700;
-      letter-spacing: 0.4px;
-      color: #fff;
-      box-shadow: 0 12px 32px rgba(37, 99, 235, 0.35);
-    }
-    h1 {
-      margin: 0;
-      font-size: 30px;
-      letter-spacing: 0.2px;
-    }
-    .sub {
-      margin: 6px 0 0;
-      font-size: 15px;
-      color: var(--muted);
-    }
-    .actions {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      padding: 10px 16px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      background: #0b1220;
-      color: var(--text);
-      text-decoration: none;
-      font-weight: 600;
-      transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-    }
-    .btn:hover {
-      background: #101a2f;
-      border-color: #2a3750;
-    }
-    .btn.primary {
-      background: var(--primary);
-      border-color: transparent;
-      color: #fff;
-    }
-    .btn.primary:hover {
-      background: var(--primary-dark);
-    }
-    .btn.ghost {
-      background: transparent;
-      border-color: var(--border-soft);
-      color: var(--muted);
-    }
-    .btn.small {
-      padding: 7px 12px;
-      font-size: 13px;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(12, minmax(0, 1fr));
-      gap: 20px;
-    }
-    .card {
-      grid-column: span 12;
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 22px 24px 26px;
-      backdrop-filter: blur(8px);
-      box-shadow: 0 18px 46px rgba(0, 0, 0, 0.35);
-    }
-    .card-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      margin-bottom: 18px;
-      flex-wrap: wrap;
-    }
-    .card h2 {
-      margin: 0;
-      font-size: 22px;
-    }
-    .ghost {
-      color: var(--muted);
-      font-size: 14px;
-    }
-    .ghost.small {
-      font-size: 12px;
-    }
-    .flash-group {
-      display: grid;
-      gap: 12px;
-      margin-bottom: 22px;
-    }
-    .flash {
-      padding: 14px 18px;
-      border-radius: 14px;
-      border: 1px solid var(--border);
-      background: rgba(30, 41, 59, 0.85);
-    }
-    .flash-success {
-      border-color: rgba(34, 197, 94, 0.35);
-      background: rgba(22, 101, 52, 0.35);
-    }
-    .flash-error {
-      border-color: rgba(239, 68, 68, 0.35);
-      background: rgba(153, 27, 27, 0.35);
-    }
-    .flash-warning {
-      border-color: rgba(245, 158, 11, 0.35);
-      background: rgba(180, 83, 9, 0.35);
-    }
-    .search {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      background: rgba(15, 23, 42, 0.65);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 6px 8px 6px 14px;
-      flex-wrap: wrap;
-    }
-    .search input[type="search"] {
-      flex: 1;
-      min-width: 180px;
-      border: none;
-      background: transparent;
-      color: var(--text);
-      font-size: 15px;
-      outline: none;
-    }
-    .search input[type="search"]::placeholder {
-      color: rgba(148, 163, 184, 0.8);
-    }
-    .search .clear {
-      font-size: 13px;
-      color: var(--muted);
-      text-decoration: none;
-      padding: 6px 10px;
-      border-radius: 10px;
-      border: 1px solid transparent;
-    }
-    .search .clear:hover {
-      border-color: var(--border-soft);
-      color: var(--text);
-    }
-    .restaurant-list {
-      display: grid;
-      gap: 18px;
-    }
-    .restaurant-card {
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 20px 20px 22px;
-      background: rgba(12, 20, 34, 0.7);
-      display: grid;
-      gap: 18px;
-    }
-    .restaurant-card.has-error {
-      border-color: rgba(239, 68, 68, 0.55);
-      box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.35);
-    }
-    .restaurant-card .card-header {
-      display: flex;
-      justify-content: space-between;
-      gap: 14px;
-      flex-wrap: wrap;
-    }
-    .restaurant-card h3 {
-      margin: 0;
-      font-size: 20px;
-    }
-    .tags {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-top: 6px;
-    }
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 6px 11px;
-      border-radius: 999px;
-      font-size: 12px;
-      border: 1px solid var(--border-soft);
-      background: rgba(15, 23, 42, 0.8);
-      color: var(--muted);
-    }
-    .badge.rating {
-      color: #fbbf24;
-      border-color: rgba(251, 191, 36, 0.4);
-    }
-    .address {
-      font-size: 14px;
-      color: var(--muted);
-      max-width: 260px;
-    }
-    .desc {
-      margin: 0;
-      color: rgba(226, 232, 240, 0.85);
-      line-height: 1.5;
-    }
-    .hours {
-      display: grid;
-      grid-template-columns: 70px 1fr;
-      gap: 6px 16px;
-      font-size: 13px;
-    }
-    .hours dt {
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
-      margin-bottom: 3px;
-      color: var(--muted);
-    }
-    .hours dd {
-      margin: 0;
-    }
-    .reserve-form {
-      display: grid;
-      gap: 14px;
-      border-top: 1px solid rgba(39, 51, 71, 0.8);
-      padding-top: 14px;
-    }
-    .reserve-form label {
-      display: grid;
-      gap: 6px;
-      font-size: 13px;
-    }
-    .reserve-form span {
-      color: var(--muted);
-      letter-spacing: 0.3px;
-    }
-    .form-grid {
-      display: grid;
-      gap: 12px;
-    }
-    @media (min-width: 560px) {
-      .form-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-      }
-    }
-    .reserve-form input[type="date"],
-    .reserve-form input[type="time"],
-    .reserve-form input[type="number"],
-    .reserve-form textarea {
-      width: 100%;
-      padding: 12px 12px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      background: rgba(10, 17, 30, 0.95);
-      color: var(--text);
-      font-size: 15px;
-      outline: none;
-      transition: border-color 0.15s ease, background 0.15s ease;
-    }
-    .reserve-form input:focus,
-    .reserve-form textarea:focus {
-      border-color: #2d3c55;
-      background: rgba(12, 20, 34, 0.95);
-    }
-    .reserve-form textarea {
-      min-height: 80px;
-      resize: vertical;
-    }
-    .field-error {
-      color: var(--danger);
-      font-size: 12px;
-    }
-    .reserve-actions {
-      display: flex;
-      justify-content: flex-end;
-      margin-top: 6px;
-    }
-    .reservation-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      display: grid;
-      gap: 14px;
-    }
-    .reservation-list li {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: flex-start;
-      background: rgba(12, 20, 34, 0.7);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 14px 16px;
-    }
-    .reservation-list.history li {
-      align-items: center;
-    }
-    .res-info {
-      display: grid;
-      gap: 4px;
-    }
-    .res-info strong {
-      font-size: 15px;
-      letter-spacing: 0.2px;
-    }
-    .badge.status {
-      justify-self: flex-start;
-      border-color: transparent;
-      color: #fff;
-    }
-    .badge.status.pending { background: rgba(37, 99, 235, 0.35); }
-    .badge.status.confirmed { background: rgba(34, 197, 94, 0.35); }
-    .badge.status.cancelled { background: rgba(239, 68, 68, 0.35); }
-    .empty {
-      padding: 14px 16px;
-      background: rgba(15, 23, 42, 0.65);
-      border: 1px dashed var(--border-soft);
-      border-radius: 14px;
-      text-align: center;
-    }
-    .foot {
-      margin-top: 40px;
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      font-size: 13px;
-      color: var(--muted);
-      flex-wrap: wrap;
-    }
-    @media (min-width: 1024px) {
-      .span-8 { grid-column: span 8; }
-      .span-4 { grid-column: span 4; }
-    }
-    @media (max-width: 720px) {
-      .top {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      .actions {
-        width: 100%;
-        justify-content: flex-start;
-      }
-    }
-  </style>
+
+  <!-- Light theme to match browse page -->
+  <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+
+  <!-- Flatpickr (calendar & time) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 </head>
 <body>
   <div class="wrap">
-    <header class="top">
-      <div class="brand">
-        <span class="logo">B</span>
+    <!-- TOP BAR -->
+    <header class="topbar">
+      <div class="hello">
+        <div class="avatar">{{ request.user.first_name|default:request.user.email|slice:":1" }}</div>
         <div>
-          <h1>Welcome back{% if request.user.first_name %}, {{ request.user.first_name }}{% endif %}</h1>
-          <p class="sub">Discover restaurants and request a table in seconds.</p>
+          <h1 class="title">Welcome back, {{ request.user.first_name|default:request.user.email }}</h1>
+          <p class="muted">Discover restaurants and request a table in seconds.</p>
         </div>
       </div>
       <div class="actions">
-        <a class="btn" href="{% url 'home' %}">&larr; Back home</a>
-        <a class="btn ghost" href="{% url 'logout' %}">Log out</a>
+        <a href="{% url 'home' %}" class="btn ghost">← Back home</a>
+        <a href="{% url 'logout' %}" class="btn">Log out</a>
       </div>
     </header>
 
-    {% if messages %}
-      <div class="flash-group">
-        {% for message in messages %}
-          <div class="flash {% if message.tags %}flash-{{ message.tags }}{% endif %}">
-            {{ message }}
-          </div>
-        {% endfor %}
-      </div>
-    {% endif %}
-
-    <section class="grid">
-      <article class="card span-8">
-        <div class="card-head">
-          <div>
+    <!-- LAYOUT -->
+    <main class="grid">
+      <!-- LEFT: BROWSE + REQUEST -->
+      <section>
+        <div class="panel">
+          <div class="panel-head">
             <h2>Browse restaurants</h2>
-            <p class="ghost">Search by cuisine, neighborhood, or name.</p>
-          </div>
-            <form class="search" method="get" action="{% url 'customer_dashboard' %}">
-              <input type="search" name="q" value="{{ search_query }}" placeholder='Try "Italian" or "Downtown"' />
-              {% if search_query %}
-                <a class="clear" href="{% url 'customer_dashboard' %}">Clear</a>
-              {% endif %}
-              <button type="submit" class="btn primary">Search</button>
+            <form method="get" class="searchbar">
+              <input type="text" name="q" value="{{ search_query }}" placeholder='Try "Italian" or "Downtown"'>
+              <button class="btn brand" type="submit">Search</button>
             </form>
-        </div>
+          </div>
 
-        {% if has_restaurants %}
-          <div class="restaurant-list">
-            {% for entry in restaurants %}
-              {% with restaurant=entry.obj form=entry.form opening=entry.opening_hours %}
-                <div class="restaurant-card{% if form.errors %} has-error{% endif %}" id="reserve-{{ restaurant.id }}">
-                  <div class="card-header">
-                    <div>
-                      <h3>{{ restaurant.name }}</h3>
-                      <div class="tags">
-                        <span class="badge">{{ restaurant.cuisine }}</span>
-                        <span class="badge">{{ restaurant.capacity }} seats</span>
-                        <span class="badge rating">
-                          {% if restaurant.rating %}
-                            &#9733; {{ restaurant.rating }}
-                          {% else %}
-                            New
-                          {% endif %}
-                        </span>
-                      </div>
+          {% if not has_restaurants %}
+            <div class="empty">No restaurants available yet.</div>
+          {% endif %}
+
+          <div class="cards">
+            {% for item in restaurants %}
+              {% with r=item.obj form=item.form hours=item.opening_hours %}
+              <article class="card {% if active_restaurant_id == r.id %}active{% endif %}">
+                <!-- Card header -->
+                <div class="card-head">
+                  <div class="thumb">{{ r.name|slice:":1" }}</div>
+                  <div class="info">
+                    <h3 class="name">{{ r.name }}</h3>
+                    <div class="meta">
+                      <span>{{ r.cuisine }}</span><span class="dot"></span>
+                      <span>{{ r.address }}</span>
                     </div>
-                    <div class="address">{{ restaurant.address }}</div>
                   </div>
-
-                  {% if restaurant.description %}
-                    <p class="desc">{{ restaurant.description }}</p>
-                  {% endif %}
-
-                  {% if opening %}
-                    <dl class="hours">
-                      {% for day, span in opening %}
-                        <dt>{{ day }}</dt>
-                        <dd>{{ span }}</dd>
-                      {% endfor %}
-                    </dl>
-                  {% else %}
-                    <p class="ghost small">Opening hours coming soon.</p>
-                  {% endif %}
-
-                  <form method="post" action="{% url 'customer_dashboard' %}#reserve-{{ restaurant.id }}" class="reserve-form">
-                    {% csrf_token %}
-                    {{ form.restaurant }}
-                    {% if form.non_field_errors %}
-                      <div class="field-error">
-                        {% for error in form.non_field_errors %}
-                          {{ error }}{% if not forloop.last %}<br>{% endif %}
-                        {% endfor %}
-                      </div>
-                    {% endif %}
-                    <div class="form-grid">
-                      <label>
-                        <span>Date</span>
-                        {{ form.reservation_date }}
-                        {% for error in form.reservation_date.errors %}
-                          <div class="field-error">{{ error }}</div>
-                        {% endfor %}
-                      </label>
-                      <label>
-                        <span>Time</span>
-                        {{ form.reservation_time }}
-                        {% for error in form.reservation_time.errors %}
-                          <div class="field-error">{{ error }}</div>
-                        {% endfor %}
-                      </label>
-                      <label>
-                        <span>Guests</span>
-                        {{ form.party_size }}
-                        {% for error in form.party_size.errors %}
-                          <div class="field-error">{{ error }}</div>
-                        {% endfor %}
-                      </label>
-                    </div>
-                    <label class="notes-field">
-                      <span>Notes (optional)</span>
-                      {{ form.notes }}
-                      {% for error in form.notes.errors %}
-                        <div class="field-error">{{ error }}</div>
-                      {% endfor %}
-                    </label>
-                    <div class="reserve-actions">
-                      <button type="submit" class="btn primary">Request table</button>
-                    </div>
-                  </form>
+                  <div class="city">{{ r.city|default:"" }}</div>
                 </div>
+
+                {% if r.description %}
+                  <p class="desc">{{ r.description }}</p>
+                {% endif %}
+
+                {% if r.opening_time and r.closing_time %}
+                  <div class="hours-row">
+                    <span class="label">Daily</span>
+                    <span class="time">{{ r.opening_time|time:"H:i" }} – {{ r.closing_time|time:"H:i" }}</span>
+                  </div>
+                {% elif hours %}
+                  <div class="hours-table">
+                    {% for day, range in hours %}
+                      <div class="row">
+                        <span class="day">{{ day }}</span>
+                        <span class="range">{{ range }}</span>
+                      </div>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+
+                <!-- Reservation form -->
+                <form method="post" class="req-form" data-restaurant="{{ r.id }}">
+                  {% csrf_token %}
+                  {{ form.restaurant }} {# hidden field #}
+
+                  {% if form.non_field_errors %}
+                    <div class="form-errors">{{ form.non_field_errors }}</div>
+                  {% endif %}
+
+                  <div class="row3">
+                    <div class="field">
+                      <label for="{{ form.reservation_date.id_for_label }}">Date</label>
+                      {{ form.reservation_date }}
+                      {% if form.reservation_date.errors %}
+                        <div class="form-errors">{{ form.reservation_date.errors }}</div>
+                      {% endif %}
+                    </div>
+
+                    <div class="field">
+                      <label for="{{ form.reservation_time.id_for_label }}">Time</label>
+                      {{ form.reservation_time }}
+                      {% if form.reservation_time.errors %}
+                        <div class="form-errors">{{ form.reservation_time.errors }}</div>
+                      {% endif %}
+                    </div>
+
+                    <div class="field">
+                      <label for="{{ form.party_size.id_for_label }}">Guests</label>
+                      {{ form.party_size }}
+                      {% if form.party_size.errors %}
+                        <div class="form-errors">{{ form.party_size.errors }}</div>
+                      {% endif %}
+                    </div>
+                  </div>
+
+                  <div class="field">
+                    <label for="{{ form.notes.id_for_label }}">Notes (optional)</label>
+                    {{ form.notes }}
+                    {% if form.notes.errors %}
+                      <div class="form-errors">{{ form.notes.errors }}</div>
+                    {% endif %}
+                  </div>
+
+                  <div class="row-end">
+                    <button class="btn brand" type="submit">Request table</button>
+                  </div>
+                </form>
+              </article>
               {% endwith %}
             {% endfor %}
           </div>
-        {% else %}
-          <div class="empty">
-            <p>No restaurants match your search yet.</p>
-            <p class="ghost">Try a different keyword or come back soon as new locations join Bookify.</p>
-          </div>
-        {% endif %}
-      </article>
+        </div>
+      </section>
 
-      <aside class="card span-4">
-        <div class="card-head">
+      <!-- RIGHT: UPCOMING / RECENT -->
+      <aside>
+        <div class="panel">
           <h2>Upcoming reservations</h2>
-        </div>
-        {% if upcoming_reservations %}
-          <ul class="reservation-list">
-            {% for item in upcoming_reservations %}
-              {% with reservation=item.instance dt=item.datetime %}
+          {% if upcoming_reservations %}
+            <ul class="list">
+              {% for r in upcoming_reservations %}
                 <li>
-                  <div class="res-info">
-                    <strong>{{ reservation.restaurant.name }}</strong>
-                    <span class="ghost">{{ dt|date:"D, M j" }} at {{ dt|time:"H:i" }}</span>
-                    <span class="ghost">Party of {{ reservation.party_size }}</span>
-                    <span class="badge status {{ reservation.status|lower }}">{{ reservation.get_status_display }}</span>
+                  <strong>{{ r.instance.restaurant.name }}</strong>
+                  <div class="muted">
+                    {{ r.instance.reservation_date }} • {{ r.instance.reservation_time|time:"H:i" }}
                   </div>
-                  <form method="post" action="{% url 'customer_cancel_reservation' reservation.pk %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn ghost small">Cancel</button>
-                  </form>
                 </li>
-              {% endwith %}
-            {% endfor %}
-          </ul>
-        {% else %}
-          <p class="ghost">You have no upcoming reservations yet. Pick a restaurant to get started.</p>
-        {% endif %}
-      </aside>
-
-      <aside class="card span-4">
-        <div class="card-head">
-          <h2>Recent activity</h2>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <div class="empty">You have no upcoming reservations yet. Pick a restaurant to get started.</div>
+          {% endif %}
         </div>
+
         {% if past_reservations %}
-          <ul class="reservation-list history">
-            {% for item in past_reservations %}
-              {% with reservation=item.instance dt=item.datetime %}
+          <div class="panel">
+            <h2>Recent reservations</h2>
+            <ul class="list">
+              {% for r in past_reservations %}
                 <li>
-                  <div class="res-info">
-                    <strong>{{ reservation.restaurant.name }}</strong>
-                    <span class="ghost">{{ dt|date:"D, M j" }} at {{ dt|time:"H:i" }}</span>
-                    <span class="badge status {{ reservation.status|lower }}">{{ reservation.get_status_display }}</span>
+                  <strong>{{ r.instance.restaurant.name }}</strong>
+                  <div class="muted">
+                    {{ r.instance.reservation_date }} • {{ r.instance.reservation_time|time:"H:i" }}
                   </div>
                 </li>
-              {% endwith %}
-            {% endfor %}
-          </ul>
-        {% else %}
-          <p class="ghost">Your reservation history will appear here after your visits.</p>
+              {% endfor %}
+            </ul>
+          </div>
         {% endif %}
       </aside>
-    </section>
-
-    <footer class="foot">
-      <span>Signed in as {{ request.user.email }}</span>
-      <span>Customer experience &mdash; Bookify</span>
-    </footer>
+    </main>
   </div>
+
+ <!-- Keep or remove depending on if you created pickers.js -->
+<script src="{% static 'js/pickers.js' %}"></script>
+
+<!-- Inline calendar/time picker initializer -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    if (!window.flatpickr) { console.warn('Flatpickr failed to load'); return; }
+
+    // Attach date pickers
+    document.querySelectorAll('input.datepicker, input[name="reservation_date"]').forEach(function (el) {
+      try { el.setAttribute('type', 'text'); } catch (e) {}
+      flatpickr(el, {
+        altInput: true,
+        altFormat: "D, M j, Y",
+        dateFormat: "Y-m-d",
+        minDate: "today"
+      });
+    });
+
+    // Attach time pickers
+    document.querySelectorAll('input.timepicker, input[name="reservation_time"]').forEach(function (el) {
+      try { el.setAttribute('type', 'text'); } catch (e) {}
+      flatpickr(el, {
+        enableTime: true,
+        noCalendar: true,
+        dateFormat: "H:i",
+        time_24hr: true,
+        minuteIncrement: 15
+      });
+    });
+  });
+</script>
 </body>
 </html>

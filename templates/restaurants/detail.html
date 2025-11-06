@@ -6,50 +6,80 @@
   <title>{{ restaurant.name }} • Bookify</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    :root{--bg:#0f172a;--panel:#111827;--muted:#94a3b8;--text:#e5e7eb;--primary:#2563eb;--border:#1f2937;}
-    body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text);
-         background:radial-gradient(1200px 700px at 20% -20%, #1f2937 0, transparent 60%), var(--bg);}
-    .wrap{max-width:900px;margin:0 auto;padding:28px 18px}
-    .panel{background:rgba(17,24,39,.8);border:1px solid var(--border);border-radius:16px;padding:18px}
-    .btn{display:inline-flex;align-items:center;padding:10px 14px;border-radius:12px;border:1px solid var(--border);
-         background:#0b1220;color:#e5e7eb;text-decoration:none;font-weight:600}
-    .btn.primary{background:#2563eb;border-color:transparent;color:#fff}
-    .meta{color:#94a3b8}
+    :root{
+      --bg:#f7f7f8; --panel:#ffffff; --text:#1f2328; --muted:#667085; --line:#e6e7eb;
+      --brand:#ff7a1a; --brand-600:#ff6a00; --brand-50:#fff4eb; --radius:18px;
+      --shadow:0 6px 24px rgba(0,0,0,.06); --shadow-sm:0 1px 3px rgba(0,0,0,.06);
+    }
+    *{box-sizing:border-box}
+    body{margin:0; background:var(--bg); color:var(--text); font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;}
+    .wrap{max-width:960px; margin:0 auto; padding:24px 18px}
+
+    .btn{display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border-radius:12px;
+         border:1px solid var(--line); background:#fff; font-weight:600; text-decoration:none; color:inherit; box-shadow:var(--shadow-sm)}
+    .btn:hover{background:#fcfcfc}
+    .btn.brand{background:var(--brand); border-color:var(--brand); color:#fff}
+    .btn.brand:hover{background:var(--brand-600)}
+
+    .panel{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow)}
+    h1{margin:0; font-size:28px}
+    .meta{color:var(--muted); margin-top:6px}
+    .section{margin-top:18px}
+
+    /* Hours block */
+    #hours .table{border:1px solid var(--line); border-radius:14px; overflow:hidden}
+    #hours .row{display:grid; grid-template-columns:1fr auto auto; gap:10px; padding:12px 14px; background:#fff}
+    #hours .row:not(:last-child){border-bottom:1px solid var(--line)}
+    #hours .day{font-weight:600}
+    #hours .time{font-variant-numeric:tabular-nums}
+    .group{display:flex; gap:10px; flex-wrap:wrap}
   </style>
 </head>
 <body>
   <div class="wrap">
     <p><a class="btn" href="{% url 'restaurant_browse' %}">← Back to list</a></p>
 
-    <div class="panel">
-      <h1 style="margin:0 0 6px 0">{{ restaurant.name }}</h1>
-      <p class="meta">{{ restaurant.cuisine }} • {{ restaurant.address }} • Seats {{ restaurant.capacity }}</p>
+    <article class="panel">
+      <header>
+        <h1>{{ restaurant.name }}</h1>
+        <p class="meta">{{ restaurant.cuisine }} • {{ restaurant.address }} • Seats {{ restaurant.capacity }}</p>
+      </header>
+
       {% if restaurant.description %}
-      <p style="margin-top:14px">{{ restaurant.description }}</p>
+        <p class="section">{{ restaurant.description }}</p>
       {% endif %}
 
-      <p class="meta" style="margin-top:8px">
-        Open {{ restaurant.opening_time|time:"H:i" }} — {{ restaurant.closing_time|time:"H:i" }}
-      </p>
+      <!-- Open/CTA -->
+      <div class="section group">
+  {% if user.is_authenticated %}
+    <a class="btn brand" href="{% url 'customer_dashboard' %}?q={{ restaurant.name|urlencode }}">
+      Book this restaurant
+    </a>
+  {% else %}
+    {# Send to login, then redirect to dashboard with the search pre-filled #}
+    {% with rname=restaurant.name|urlencode %}
+      <a class="btn brand"
+         href="{% url 'login' %}?next={% url 'customer_dashboard' %}%3Fq={{ rname }}">
+        Log in to book
+      </a>
+    {% endwith %}
+  {% endif %}
+  <a class="btn" href="#hours">View opening hours</a>
+</div>
+      <!-- Opening hours -->
+      <section id="hours" class="section" aria-label="Opening hours">
+        <h3 style="margin:0 0 10px 0">Opening hours</h3>
 
-      {% if user.is_authenticated %}
-        {# Authenticated → go straight to the registered browse (customer dashboard),
-           pre-filtered to this restaurant by name #}
-        <a class="btn primary"
-           href="{% url 'customer_dashboard' %}?q={{ restaurant.name|urlencode }}">
-           Book this restaurant
-        </a>
-      {% else %}
-        {# Guest → Login, carrying next to the customer dashboard with the same filter.
-           Note: we encode '?' as %3F so it's part of the next= value. #}
-        {% with rname=restaurant.name|urlencode %}
-          <a class="btn primary"
-             href="{% url 'login' %}?next={% url 'customer_dashboard' %}%3Fq={{ rname }}">
-             Log in to book
-          </a>
-        {% endwith %}
-      {% endif %}
-    </div>
+        {# If you later store per-day JSON, replace the single row with a 7-row loop. #}
+        <div class="table">
+          <div class="row">
+            <div class="day">Mon – Sun</div>
+            <div class="time">{{ restaurant.opening_time|time:"H:i" }}</div>
+            <div class="time">– {{ restaurant.closing_time|time:"H:i" }}</div>
+          </div>
+        </div>
+      </section>
+    </article>
   </div>
 </body>
 </html>

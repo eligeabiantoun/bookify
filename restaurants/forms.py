@@ -6,14 +6,14 @@ from django.utils import timezone
 
 from .models import Reservation, Restaurant
 
+
+# -------------------------------
+# Restaurant (owner form)
+# -------------------------------
 class RestaurantForm(forms.ModelForm):
     opening_hours = forms.CharField(
         required=False,
-        widget=forms.HiddenInput(
-            attrs={
-                "id": "opening-hours-input",
-            }
-        ),
+        widget=forms.HiddenInput(attrs={"id": "opening-hours-input"}),
     )
 
     class Meta:
@@ -39,8 +39,8 @@ class RestaurantForm(forms.ModelForm):
             self.fields["opening_hours"].initial = existing
 
     def clean_opening_hours(self):
-        data = self.cleaned_data.get("opening_hours") or ""
-        if not data.strip():
+        data = (self.cleaned_data.get("opening_hours") or "").strip()
+        if not data:
             return {}
         try:
             parsed = json.loads(data)
@@ -53,28 +53,26 @@ class RestaurantForm(forms.ModelForm):
             )
 
 
+# -------------------------------
+# Reservation (customer request)
+# -------------------------------
 class ReservationForm(forms.ModelForm):
+    # Use text inputs with classes so Flatpickr (or native) can attach.
     reservation_date = forms.DateField(
-        widget=forms.DateInput(attrs={"type": "date"})
+        widget=forms.DateInput(attrs={"class": "input datepicker"})
     )
     reservation_time = forms.TimeField(
-        widget=forms.TimeInput(attrs={"type": "time"})
+        widget=forms.TimeInput(attrs={"class": "input timepicker"})
     )
 
     class Meta:
         model = Reservation
-        fields = [
-            "restaurant",
-            "reservation_date",
-            "reservation_time",
-            "party_size",
-            "notes",
-        ]
+        fields = ["restaurant", "reservation_date", "reservation_time", "party_size", "notes"]
         widgets = {
             "restaurant": forms.HiddenInput(),
-            "party_size": forms.NumberInput(attrs={"min": 1}),
+            "party_size": forms.NumberInput(attrs={"class": "input", "min": 1}),
             "notes": forms.Textarea(
-                attrs={"rows": 3, "placeholder": "Optional notes for the restaurant"}
+                attrs={"class": "input textarea", "rows": 3, "placeholder": "Optional notes for the restaurant"}
             ),
         }
 
@@ -98,10 +96,7 @@ class ReservationForm(forms.ModelForm):
         party_size = cleaned.get("party_size")
 
         if restaurant and party_size and party_size > restaurant.capacity:
-            self.add_error(
-                "party_size",
-                f"Maximum party size is {restaurant.capacity} seats.",
-            )
+            self.add_error("party_size", f"Maximum party size is {restaurant.capacity} seats.")
 
         if reservation_date and reservation_time:
             combined = datetime.datetime.combine(reservation_date, reservation_time)
