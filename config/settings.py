@@ -140,7 +140,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # AUTH FLOW (🔧 important for your bug fix)
 # ---------------------------------------------------------------------
 LOGIN_URL = "login"                       # your login url_name
-LOGIN_REDIRECT_URL = "customer_dashboard" # ✅ fallback after login to registered experience
+LOGIN_REDIRECT_URL = "post_login" 
 LOGOUT_REDIRECT_URL = "/"
 
 # ---------------------------------------------------------------------

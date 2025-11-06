@@ -55,11 +55,9 @@ def signup_view(request):
 
 def login_view(request):
     """
-    Fixed login redirect logic:
-    - Carries ?next=...
-    - Only redirects to a SAFE next within this host
-    - If next points to a *guest/public* browse, rewrite to the registered destination
-    - Else fall back to role-based router
+    Login with safe redirect:
+    - Honors ?next= only if it's safe AND matches the user's role when it points to a dashboard
+    - Otherwise routes by role via post_login_router
     """
     if request.method == "POST":
         form = LoginForm(request.POST)
@@ -77,7 +75,7 @@ def login_view(request):
 
                 login(request, user)
 
-                # --- NEW: Respect and sanitize 'next'
+                # --- Respect and sanitize 'next', but avoid role/dashboard mismatches
                 next_url = request.POST.get("next") or request.GET.get("next")
 
                 if next_url and url_has_allowed_host_and_scheme(
@@ -85,42 +83,46 @@ def login_view(request):
                     allowed_hosts={request.get_host()},
                     require_https=request.is_secure(),
                 ):
-                    # Try to resolve the target to decide if it's a guest/public browse
                     path = urlparse(next_url).path
-                    target_name = None
                     try:
                         target_name = resolve(path).url_name
                     except Exception:
-                        target_name = None  # non-resolvable, but still safe; we'll allow it below
+                        target_name = None
 
-                    # Heuristics for guest browse routes:
-                    # - url_name contains 'guest'/'public'/'unregistered'
-                    # - path contains '/guest' or '/public'
-                    is_guestish = False
+                    # Role -> allowed dashboard
+                    role_to_dash = {
+                        User.Roles.CUSTOMER: "customer_dashboard",
+                        User.Roles.OWNER:    "owner_dashboard",
+                        User.Roles.STAFF:    "staff_dashboard",
+                    }
+                    allowed_dash = role_to_dash.get(user.role)
+                    dashboard_names = {"customer_dashboard", "owner_dashboard", "staff_dashboard"}
+
+                    # If next points to a dashboard that isn't the user's → override
+                    if target_name in dashboard_names and target_name != allowed_dash:
+                        return redirect(allowed_dash)
+
+                    # Don't send logged-in users to guest/public routes
                     name_lc = (target_name or "").lower()
                     path_lc = (path or "").lower()
-                    if any(key in name_lc for key in ("guest", "public", "unregistered")) or \
-                       any(seg in path_lc for seg in ("/guest", "/public", "/unregistered")):
-                        is_guestish = True
-
-                    # If user is a customer and next looked like a guest page, send to registered customer browse
-                    if user.role == User.Roles.CUSTOMER and is_guestish:
-                        return redirect("customer_dashboard")
+                    is_guestish = any(k in name_lc for k in ("guest", "public", "unregistered")) or \
+                                  any(seg in path_lc for seg in ("/guest", "/public", "/unregistered"))
+                    if is_guestish:
+                        return redirect(allowed_dash or "customer_dashboard")
 
                     # Otherwise honor the next URL
                     return redirect(next_url)
 
-                # No usable next -> role-aware fallback
+                # No usable/appropriate next → route by role
                 return post_login_router(request)
     else:
         form = LoginForm()
 
-    # Carry next to the template so the POST keeps it
+    # Keep carrying ?next= to the form (your login.html has a hidden input named "next")
     return render(request, "registration/login.html", {
         "form": form,
         "next": request.GET.get("next", "")
     })
-
 
 def logout_view(request):
     logout(request)

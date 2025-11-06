@@ -49,28 +49,27 @@
         <p class="section">{{ restaurant.description }}</p>
       {% endif %}
 
-      <!-- Open/CTA -->
+      <!-- CTA (role-aware, no forced ?next) -->
       <div class="section group">
-  {% if user.is_authenticated %}
-    <a class="btn brand" href="{% url 'customer_dashboard' %}?q={{ restaurant.name|urlencode }}">
-      Book this restaurant
-    </a>
-  {% else %}
-    {# Send to login, then redirect to dashboard with the search pre-filled #}
-    {% with rname=restaurant.name|urlencode %}
-      <a class="btn brand"
-         href="{% url 'login' %}?next={% url 'customer_dashboard' %}%3Fq={{ rname }}">
-        Log in to book
-      </a>
-    {% endwith %}
-  {% endif %}
-  <a class="btn" href="#hours">View opening hours</a>
-</div>
+        {% if user.is_authenticated %}
+          {% if user.role == 'CUSTOMER' %}
+            <a class="btn brand" href="{% url 'customer_dashboard' %}?q={{ restaurant.name|urlencode }}">
+              Book this restaurant
+            </a>
+          {% elif user.role == 'OWNER' %}
+            <a class="btn brand" href="{% url 'owner_dashboard' %}">Manage reservations</a>
+          {% else %}
+            <a class="btn brand" href="{% url 'staff_dashboard' %}">Manage reservations</a>
+          {% endif %}
+        {% else %}
+          <a class="btn brand" href="{% url 'login' %}">Log in to book</a>
+        {% endif %}
+        <a class="btn" href="#hours">View opening hours</a>
+      </div>
+
       <!-- Opening hours -->
       <section id="hours" class="section" aria-label="Opening hours">
         <h3 style="margin:0 0 10px 0">Opening hours</h3>
-
-        {# If you later store per-day JSON, replace the single row with a 7-row loop. #}
         <div class="table">
           <div class="row">
             <div class="day">Mon – Sun</div>

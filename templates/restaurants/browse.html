@@ -22,7 +22,6 @@
     .bar{display:flex;gap:10px;align-items:center}
     a{color:inherit;text-decoration:none}
 
-    /* Buttons (smaller) */
     .btn{
       display:inline-flex;align-items:center;justify-content:center;gap:8px;
       height:36px;padding:0 12px;border-radius:10px;border:1px solid var(--line);
@@ -34,7 +33,6 @@
     .btn.ghost{background:transparent}
     .btn.full{width:100%}
 
-    /* Filters */
     .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:12px;box-shadow:var(--shadow)}
     .filters{display:grid;grid-template-columns:2fr 1.4fr auto;gap:10px}
     input{width:100%;height:44px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:#fff}
@@ -42,39 +40,34 @@
     .chip{height:32px;padding:0 12px;border-radius:999px;background:#f3f4f6;border:1px solid var(--line);font-size:13px}
     .chip:hover{background:#eef0f3}
 
-    /* Grid & cards */
     .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:18px;margin-top:18px}
     .card{
       grid-column:span 12;
       display:flex;align-items:stretch;gap:16px;
       background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
       padding:16px;box-shadow:var(--shadow);
-      min-height:150px; /* keep tidy; name can wrap */
+      min-height:150px;
       transition:transform .12s ease, box-shadow .12s ease;
     }
     .card:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(0,0,0,.08)}
     @media (min-width:860px){ .card{grid-column:span 6} }
     @media (min-width:1120px){ .card{grid-column:span 4} }
 
-    /* Left thumbnail (smaller) */
     .thumb{
       flex:0 0 72px;height:72px;border-radius:12px;background:var(--brand-50);
       display:grid;place-items:center;font-weight:800;color:var(--brand);font-size:18px;border:1px solid #ffe2c8;
       align-self:center;
     }
 
-    /* Middle info */
     .info{flex:1;display:flex;flex-direction:column;justify-content:center;min-width:0}
     .name{
       font-size:17px;font-weight:800;margin:0 0 6px 0;line-height:1.2;
-      /* SHOW FULL NAME: no clamp, wrap freely */
       white-space:normal; overflow-wrap:anywhere;
     }
     .meta{color:var(--muted);font-size:13px;line-height:1.35}
     .meta-row{display:flex;gap:.45rem;flex-wrap:wrap}
     .dot::before{content:"•";color:#c0c3c7}
 
-    /* Right column (narrower + smaller elements) */
     .actions{flex:0 0 140px;display:flex;flex-direction:column;gap:8px}
     .spacer{flex:1}
     .badge{
@@ -92,7 +85,19 @@
       <h1 class="title">Browse Restaurants</h1>
       <div class="bar">
         <a href="{% url 'home' %}" class="btn ghost">← Home</a>
-        <a href="{% url 'login' %}?next={% url 'customer_dashboard' %}" class="btn">Log in</a>
+
+        {# Role-aware header button (no forced ?next=) #}
+        {% if request.user.is_authenticated %}
+          {% if request.user.role == 'OWNER' %}
+            <a href="{% url 'owner_dashboard' %}" class="btn">Owner dashboard</a>
+          {% elif request.user.role == 'STAFF' %}
+            <a href="{% url 'staff_dashboard' %}" class="btn">Staff dashboard</a>
+          {% else %}
+            <a href="{% url 'customer_dashboard' %}" class="btn">My reservations</a>
+          {% endif %}
+        {% else %}
+          <a href="{% url 'login' %}" class="btn">Log in</a>
+        {% endif %}
       </div>
     </header>
 
@@ -116,10 +121,8 @@
     <section class="grid" aria-label="Restaurant results">
       {% for r in restaurants %}
         <article class="card">
-          <!-- Left -->
           <div class="thumb" aria-hidden="true">{{ r.name|slice:":1" }}</div>
 
-          <!-- Middle: full name + cuisine + address (no description) -->
           <div class="info">
             <h3 class="name">{{ r.name }}</h3>
             <div class="meta">
@@ -129,9 +132,20 @@
             </div>
           </div>
 
-          <!-- Right: smaller buttons + small badge (all inside card) -->
           <div class="actions">
-            <a class="btn brand full" href="{% url 'login' %}?next={% url 'customer_dashboard' %}">Book now</a>
+            {# Role-aware primary button #}
+            {% if request.user.is_authenticated %}
+              {% if request.user.role == 'CUSTOMER' %}
+                <a class="btn brand full" href="{% url 'customer_dashboard' %}">Book now</a>
+              {% elif request.user.role == 'OWNER' %}
+                <a class="btn brand full" href="{% url 'owner_dashboard' %}">Manage</a>
+              {% else %}
+                <a class="btn brand full" href="{% url 'staff_dashboard' %}">Manage</a>
+              {% endif %}
+            {% else %}
+              <a class="btn brand full" href="{% url 'login' %}">Book now</a>
+            {% endif %}
+
             <a class="btn full" href="{% url 'restaurant_detail' r.id %}#hours">More info</a>
             <div class="spacer"></div>
             <div class="badge">Open {{ r.opening_time|time:"H:i" }} — {{ r.closing_time|time:"H:i" }}</div>

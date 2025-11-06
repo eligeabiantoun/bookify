@@ -63,6 +63,7 @@ urlpatterns = [
 
     # Built-in auth URLs at /accounts/ (kept for password change, etc.)
     path("accounts/", include("django.contrib.auth.urls")),
+   
 
     # ---------- Restaurants ----------
     # Public browse + detail (guest pages)
