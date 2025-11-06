@@ -54,18 +54,36 @@
       <form method="post" novalidate>
         {% csrf_token %}
 
-        <!-- Email -->
-        <div class="mb-3">
-          <label for="{{ form.username.id_for_label }}" class="form-label text-white-50">Email</label>
-          {{ form.username }}
-          {% if form.username.errors %}
-            <ul class="errorlist">
-              {% for e in form.username.errors %}
-                <li>{{ e }}</li>
-              {% endfor %}
-            </ul>
-          {% endif %}
-        </div>
+        <!-- 🔒 Carry redirect target across GET→POST -->
+        <input type="hidden" name="next" value="{{ next|default:'' }}">
+
+
+        <!-- Email (or Username fallback) -->
+        {% if form.email %}
+          <div class="mb-3">
+            <label for="{{ form.email.id_for_label }}" class="form-label text-white-50">Email</label>
+            {{ form.email }}
+            {% if form.email.errors %}
+              <ul class="errorlist">
+                {% for e in form.email.errors %}
+                  <li>{{ e }}</li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+        {% else %}
+          <div class="mb-3">
+            <label for="{{ form.username.id_for_label }}" class="form-label text-white-50">Email</label>
+            {{ form.username }}
+            {% if form.username.errors %}
+              <ul class="errorlist">
+                {% for e in form.username.errors %}
+                  <li>{{ e }}</li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+        {% endif %}
 
         <!-- Password -->
         <div class="mb-3">
@@ -100,4 +118,3 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-

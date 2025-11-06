@@ -1,8 +1,15 @@
 from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import TemplateView
+from django.contrib.auth import views as auth_views
+
 from accounts import views as a
-from django.contrib.auth import views as auth_views  # ✅ correct import
+from restaurants.views import (
+    PublicRestaurantListView,
+    PublicRestaurantDetailView,
+    owner_restaurant_create,
+    owner_restaurant_edit,
+)
 
 urlpatterns = [
     # Home
@@ -48,19 +55,24 @@ urlpatterns = [
     path("auth/invitations/create/", a.create_invitation_view, name="create_invitation"),
     path("accept-invite/", a.accept_invite_view, name="accept_invite"),
 
-    # Dashboards
+    # Dashboards (registered experiences)
     path("dashboard/customer/", a.customer_dashboard, name="customer_dashboard"),
     path("dashboard/customer/reservations/<int:pk>/cancel/", a.cancel_reservation, name="customer_cancel_reservation"),
     path("dashboard/owner/", a.owner_dashboard, name="owner_dashboard"),
     path("dashboard/staff/", a.staff_dashboard, name="staff_dashboard"),
 
-    # Built-in auth URLs
+    # Built-in auth URLs at /accounts/ (kept for password change, etc.)
     path("accounts/", include("django.contrib.auth.urls")),
 
     # ---------- Restaurants ----------
-    # Public site pages (e.g., /browse/, /<id>/)
-    path("", include("restaurants.urls")),  # your restaurants/urls.py has browse + detail
-    path("", include("restaurants.urls_site")),
-    # API mounted once at /api/ (requires restaurants/api_urls.py)
+    # Public browse + detail (guest pages)
+    path("restaurants/", PublicRestaurantListView.as_view(), name="restaurant_browse"),
+    path("restaurants/<int:pk>/", PublicRestaurantDetailView.as_view(), name="restaurant_detail"),
+
+    # Owners manage their restaurant
+    path("owner/restaurant/new/", owner_restaurant_create, name="owner_restaurant_create"),
+    path("owner/restaurant/edit/", owner_restaurant_edit, name="owner_restaurant_edit"),
+
+    # API (if you have restaurants/api_urls.py)
     path("api/", include("restaurants.api_urls")),
 ]

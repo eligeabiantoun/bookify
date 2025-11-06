@@ -7,7 +7,6 @@ from .models import Restaurant
 from .serializers import RestaurantSerializer
 from .permissions import IsOwnerOrReadOnly
 
-
 class RestaurantViewSet(viewsets.ModelViewSet):
     """
     REST API for restaurants.
@@ -94,13 +93,13 @@ def owner_restaurant_edit(request):
     )
 
 
-# ---------- Public browse & detail views (for guests) ----------
+# ---------- Public browse & detail views (PUBLIC for guests AND logged-in users) ----------
 from django.views.generic import ListView, DetailView
-
 
 class PublicRestaurantListView(ListView):
     """
-    Public list view: anyone can browse restaurants without logging in.
+    Public list view: anyone can browse restaurants (even if logged in).
+    Booking is handled elsewhere and requires login.
     """
     template_name = "restaurants/browse.html"
     model = Restaurant
@@ -127,7 +126,7 @@ class PublicRestaurantListView(ListView):
 class PublicRestaurantDetailView(DetailView):
     """
     Public detail page: anyone can view restaurant details.
-    Shows 'Log in to book' if user is not authenticated.
+    Templates show 'Log in to book' for guests; logged-in users can also view it.
     """
     template_name = "restaurants/detail.html"
     model = Restaurant

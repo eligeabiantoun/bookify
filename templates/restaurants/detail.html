@@ -33,10 +33,21 @@
       </p>
 
       {% if user.is_authenticated %}
-        <!-- Placeholder for your booking flow -->
-        <a class="btn primary" href="#">Start booking</a>
+        {# Authenticated → go straight to the registered browse (customer dashboard),
+           pre-filtered to this restaurant by name #}
+        <a class="btn primary"
+           href="{% url 'customer_dashboard' %}?q={{ restaurant.name|urlencode }}">
+           Book this restaurant
+        </a>
       {% else %}
-        <a class="btn primary" href="{% url 'login' %}?next={{ request.path }}">Log in to book</a>
+        {# Guest → Login, carrying next to the customer dashboard with the same filter.
+           Note: we encode '?' as %3F so it's part of the next= value. #}
+        {% with rname=restaurant.name|urlencode %}
+          <a class="btn primary"
+             href="{% url 'login' %}?next={% url 'customer_dashboard' %}%3Fq={{ rname }}">
+             Log in to book
+          </a>
+        {% endwith %}
       {% endif %}
     </div>
   </div>

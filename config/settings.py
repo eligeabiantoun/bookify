@@ -2,8 +2,10 @@ from pathlib import Path
 import environ
 import os
 from dotenv import load_dotenv
+import dj_database_url
 
 load_dotenv()
+
 # ---------------------------------------------------------------------
 # BASE + ENV
 # ---------------------------------------------------------------------
@@ -74,19 +76,19 @@ TEMPLATES = [
 ]
 
 # ---------------------------------------------------------------------
-# DATABASE (SQLite for Sprint 1)
+# DATABASE
 # ---------------------------------------------------------------------
-import dj_database_url
-
+# Use DATABASE_URL if provided (e.g., Postgres on Neon/Render); otherwise fall back to local SQLite
 DATABASES = {
-    "default": dj_database_url.parse(os.getenv("DATABASE_URL"))
+    "default": dj_database_url.config(
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        conn_max_age=600,
+    )
 }
-        
 
 # If your provider requires SSL (Neon usually does), either ensure
 # ?sslmode=require is in the URL OR force it here:
-if DATABASES["default"]["ENGINE"].endswith("postgresql") and \
-   "OPTIONS" not in DATABASES["default"]:
+if DATABASES["default"]["ENGINE"].endswith("postgresql") and "OPTIONS" not in DATABASES["default"]:
     DATABASES["default"]["OPTIONS"] = {"sslmode": "require"}
 
 # ---------------------------------------------------------------------
@@ -112,6 +114,8 @@ USE_TZ = True
 # ---------------------------------------------------------------------
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
+# Optional for deployments that run collectstatic:
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # ---------------------------------------------------------------------
 # EMAIL (console backend for dev)
@@ -132,18 +136,19 @@ AUTHENTICATION_BACKENDS = [
 # ---------------------------------------------------------------------
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-
-# Make sure these exist for dev
-LOGIN_URL = "/login/"
-LOGIN_REDIRECT_URL = "/post-login/"
+# ---------------------------------------------------------------------
+# AUTH FLOW (🔧 important for your bug fix)
+# ---------------------------------------------------------------------
+LOGIN_URL = "login"                       # your login url_name
+LOGIN_REDIRECT_URL = "customer_dashboard" # ✅ fallback after login to registered experience
 LOGOUT_REDIRECT_URL = "/"
 
-# Optional but helpful for localhost dev
+# ---------------------------------------------------------------------
+# DEV SECURITY HELPERS
+# ---------------------------------------------------------------------
 CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:8000",
     "http://localhost:8000",
 ]
 SESSION_COOKIE_SECURE = False
-CSRF_COOKIE_SECURE = False  
-
-
+CSRF_COOKIE_SECURE = False

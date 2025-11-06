@@ -1,4 +1,5 @@
 import datetime
+from urllib.parse import urlparse  # ✅ ADDED
 
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
@@ -7,9 +8,10 @@ from django.core.mail import send_mail
 from django.db.models import Q
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse
+from django.urls import reverse, resolve  # ✅ ADDED resolve
 from django.utils import timezone
 from django.utils.timesince import timesince
+from django.utils.http import url_has_allowed_host_and_scheme  # ✅ ADDED
 
 from .forms import LoginForm, SignupForm
 from .models import StaffInvitation, User
@@ -25,10 +27,11 @@ def _send_verification_email(user, request):
         message=f"Click to verify your account: {link}",
         from_email=None,  # uses DEFAULT_FROM_EMAIL
         recipient_list=[user.email],
-        )
+    )
+
 
 def signup_view(request):
-          
+
     if request.method == "POST":
         if request.POST.get("role") == User.Roles.STAFF:
             messages.error(request, "Staff accounts are invite-only. Ask your manager for an invite link.")
@@ -49,25 +52,75 @@ def signup_view(request):
     form = SignupForm()
     return render(request, "accounts/signup.html", {"form": form})
 
-def login_view(request):
 
+def login_view(request):
+    """
+    Fixed login redirect logic:
+    - Carries ?next=...
+    - Only redirects to a SAFE next within this host
+    - If next points to a *guest/public* browse, rewrite to the registered destination
+    - Else fall back to role-based router
+    """
     if request.method == "POST":
         form = LoginForm(request.POST)
         if form.is_valid():
             user = authenticate(
-                request, 
-                email=form.cleaned_data["email"], 
-                password=form.cleaned_data["password"])
+                request,
+                email=form.cleaned_data["email"],
+                password=form.cleaned_data["password"],
+            )
             if user is None:
                 messages.error(request, "Invalid credentials.")
             else:
                 if not user.is_email_verified:
                     return render(request, "accounts/verify_prompt.html", {"email": user.email})
-                login(request, user); 
-                return redirect("post_login")
+
+                login(request, user)
+
+                # --- NEW: Respect and sanitize 'next'
+                next_url = request.POST.get("next") or request.GET.get("next")
+
+                if next_url and url_has_allowed_host_and_scheme(
+                    next_url,
+                    allowed_hosts={request.get_host()},
+                    require_https=request.is_secure(),
+                ):
+                    # Try to resolve the target to decide if it's a guest/public browse
+                    path = urlparse(next_url).path
+                    target_name = None
+                    try:
+                        target_name = resolve(path).url_name
+                    except Exception:
+                        target_name = None  # non-resolvable, but still safe; we'll allow it below
+
+                    # Heuristics for guest browse routes:
+                    # - url_name contains 'guest'/'public'/'unregistered'
+                    # - path contains '/guest' or '/public'
+                    is_guestish = False
+                    name_lc = (target_name or "").lower()
+                    path_lc = (path or "").lower()
+                    if any(key in name_lc for key in ("guest", "public", "unregistered")) or \
+                       any(seg in path_lc for seg in ("/guest", "/public", "/unregistered")):
+                        is_guestish = True
+
+                    # If user is a customer and next looked like a guest page, send to registered customer browse
+                    if user.role == User.Roles.CUSTOMER and is_guestish:
+                        return redirect("customer_dashboard")
+
+                    # Otherwise honor the next URL
+                    return redirect(next_url)
+
+                # No usable next -> role-aware fallback
+                return post_login_router(request)
     else:
         form = LoginForm()
-    return render(request, "registration/login.html", {"form": form})
+
+    # Carry next to the template so the POST keeps it
+    return render(request, "registration/login.html", {
+        "form": form,
+        "next": request.GET.get("next", "")
+    })
+
 
 def logout_view(request):
     logout(request)
@@ -79,29 +132,32 @@ def verify_email_view(request):
     user = User.verify_email_token(token) if token else None
     if not user:
         return render(
-            request, 
-            "accounts/error.html", 
+            request,
+            "accounts/error.html",
             {"message": "Invalid or expired verification link."},
             status=400,
         )
-    user.is_email_verified = True; 
+    user.is_email_verified = True
     user.save()
     messages.success(request, "Email verified. You can now log in.")
     return redirect("login")
 
+
 @login_required
 def post_login_router(request):
     role = request.user.role
-    if role == User.Roles.CUSTOMER: 
+    if role == User.Roles.CUSTOMER:
         return redirect("customer_dashboard")
-    if role == User.Roles.OWNER: 
+    if role == User.Roles.OWNER:
         return redirect("owner_dashboard")
-    if role == User.Roles.STAFF: 
+    if role == User.Roles.STAFF:
         return redirect("staff_dashboard")
     return HttpResponseForbidden("Unknown role")
 
-def is_owner(u): 
+
+def is_owner(u):
     return u.is_authenticated and u.role == User.Roles.OWNER
+
 
 @login_required
 @user_passes_test(is_owner)
@@ -136,13 +192,14 @@ def create_invitation_view(request):
         link = request.build_absolute_uri(reverse("accept_invite") + f"?token={inv.token}")
         send_mail(
             subject="Your Bookify staff invite",
-             message= f"Open this link to join: {link}",
-              from_email= None, 
-              recipient_list=[email],
+            message=f"Open this link to join: {link}",
+            from_email=None,
+            recipient_list=[email],
         )
         messages.success(request, f"Invitation sent to {email}")
         return redirect("owner_dashboard")
     return render(request, "accounts/create_invite.html")
+
 
 def accept_invite_view(request):
 
@@ -161,17 +218,18 @@ def accept_invite_view(request):
         pwd = request.POST.get("password")
         if pwd and len(pwd) >= 8 and any(c.isalpha() for c in pwd) and any(c.isdigit() for c in pwd):
             user = User.objects.create_user(
-                email=inv.email, 
-                password=pwd, 
-                role=User.Roles.STAFF, 
+                email=inv.email,
+                password=pwd,
+                role=User.Roles.STAFF,
                 is_email_verified=True,
             )
-            inv.accepted_at = timezone.now(); 
+            inv.accepted_at = timezone.now()
             inv.save()
             messages.success(request, "Account created. You can log in.")
             return redirect("login")
         messages.error(request, "Password must be at least 8 chars, with letters and digits.")
     return render(request, "accounts/accept_invite.html", {"token": token})
+
 
 @login_required
 def customer_dashboard(request):
@@ -330,7 +388,7 @@ def cancel_reservation(request, pk):
 
 @login_required
 def owner_dashboard(request):
-    if request.user.role != User.Roles.OWNER: 
+    if request.user.role != User.Roles.OWNER:
         return HttpResponseForbidden("403")
 
     restaurant = Restaurant.objects.filter(owner=request.user).first()
@@ -438,11 +496,13 @@ def owner_dashboard(request):
 
     return render(request, "accounts/dashboard_owner.html", context)
 
+
 @login_required
 def staff_dashboard(request):
-    if request.user.role != User.Roles.STAFF: 
+    if request.user.role != User.Roles.STAFF:
         return HttpResponseForbidden("403")
     return render(request, "accounts/dashboard_staff.html")
+
 
 # --- Contact Support page ---
 def contact_support(request):
