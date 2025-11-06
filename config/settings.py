@@ -1,6 +1,9 @@
 from pathlib import Path
 import environ
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
 # ---------------------------------------------------------------------
 # BASE + ENV
 # ---------------------------------------------------------------------
@@ -73,12 +76,12 @@ TEMPLATES = [
 # ---------------------------------------------------------------------
 # DATABASE (SQLite for Sprint 1)
 # ---------------------------------------------------------------------
+import dj_database_url
+
 DATABASES = {
-    "default": env.db(
-        "DATABASE_URL",
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
-    )
+    "default": dj_database_url.parse(os.getenv("DATABASE_URL"))
 }
+        
 
 # If your provider requires SSL (Neon usually does), either ensure
 # ?sslmode=require is in the URL OR force it here:

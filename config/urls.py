@@ -60,7 +60,7 @@ urlpatterns = [
     # ---------- Restaurants ----------
     # Public site pages (e.g., /browse/, /<id>/)
     path("", include("restaurants.urls")),  # your restaurants/urls.py has browse + detail
-
+    path("", include("restaurants.urls_site")),
     # API mounted once at /api/ (requires restaurants/api_urls.py)
     path("api/", include("restaurants.api_urls")),
 ]
