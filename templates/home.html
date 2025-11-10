@@ -7,86 +7,177 @@
   <style>
     :root{
       --accent:#ff6a2a; --accent-2:#ff8451;
-      --navy:#0b1b34; --muted:#5e6b7b; --border:#d7e6ff;
-      --card:#ffffff; --text:#0f1b2d; --blue:#1e73be;
+      --ink:#0f1b2d; --muted:#667084; --border:#eceff5;
+      --navy:#0b1b34; --card:#ffffff;
     }
-    html, body { height:100%; }
-    body{
-      min-height:100vh; display:grid; place-items:center; padding:20px;
-      background:var(--navy); color:var(--text);
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
-    }
+    html, body { height:auto; scroll-behavior:smooth; }
+    body{ margin:0; font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; color:var(--ink); }
 
-    /* Support link (unchanged) */
-    .support-link{
-      position:fixed; top:18px; right:28px; z-index:1000;
-      font-weight:800; color:#e6efff; text-decoration:none; letter-spacing:.2px;
-    }
-    .support-link:hover{ opacity:.9; text-decoration:underline; }
+    /* NAV */
+    .nav{ position:sticky; top:0; z-index:40; background:rgba(255,255,255,.88); border-bottom:1px solid var(--border); backdrop-filter:blur(8px); }
+    .nav-wrap{ max-width:1200px; margin:0 auto; padding:12px 20px; display:flex; align-items:center; gap:16px; }
+    .brand{ font-weight:900; text-decoration:none; color:#111; }
+    .spacer{ flex:1; }
+    .nav-link{ text-decoration:none; color:#111; font-weight:700; padding:8px 12px; border-radius:10px; }
+    .nav-link:hover{ background:#f6f7fb; }
 
-    /* Smaller card */
+    /* HERO: full-slide feel */
+    .hero{
+      position:relative; overflow:hidden;
+      border-bottom:1px solid var(--border);
+      background:linear-gradient(180deg,#fff,#fbfcfe);
+      min-height:78vh;                 /* tall */
+      display:flex; align-items:center; /* vertical center */
+    }
+    .hero-wrap{ max-width:1200px; margin:0 auto; padding:96px 20px; text-align:center; }
+    .hero h1{
+      font-size:clamp(40px,7.2vw,88px);
+      line-height:1.05; letter-spacing:-.02em;
+      margin:0 0 18px; font-weight:900; color:var(--accent);
+    }
+    .hero .lede{
+      color:var(--muted); font-size:clamp(16px,2.2vw,22px);
+      max-width:900px; margin:0 auto 32px; line-height:1.45;
+    }
+    .cta-row{ display:flex; gap:18px; flex-wrap:wrap; justify-content:center; }
+    .btn{
+      display:inline-flex; align-items:center; gap:10px;
+      padding:14px 20px; border-radius:14px; font-weight:800; text-decoration:none;
+      border:1px solid var(--border);
+    }
+    .btn svg{ width:20px; height:20px; }
+    .btn-primary{ background:var(--accent); color:#fff; border-color:var(--accent); }
+    .btn-primary:hover{ background:var(--accent-2); }
+    .btn-ghost{ background:#fff; color:#111; }
+    .btn-ghost:hover{ background:#f6f7fb; }
+
+    /* Spacer to make classic card feel like next slide */
+    .section-gap{ height:160px; }
+
+    /* CLASSIC CARD SECTION */
+    .classic-section{ background:var(--navy); padding:36px 20px 64px; }
     .card{
-      width:min(520px, 90vw);
-      background:var(--card);
-      border:1px solid var(--border); border-radius:14px;
-      padding:22px 20px;
-      text-align:center;
-      box-shadow:0 10px 34px rgba(0,0,0,.16);
+      width:min(520px,90vw); margin:0 auto;
+      background:var(--card); border:1px solid #d7e6ff; border-radius:16px;
+      padding:20px 18px; text-align:center; color:var(--ink);
+      box-shadow:0 8px 28px rgba(0,0,0,.14);
     }
+    .logo-wrap{ display:flex; justify-content:center; margin-bottom:6px; }
+    .brand-logo{ width:250px; height:auto; display:block; }
+    .tagline{ margin:6px auto 18px; color:#5e6b7b; font-size:16px; max-width:42ch; line-height:1.45; }
+    nav.actions{ display:flex; flex-direction:column; gap:8px; max-width:300px; margin:0 auto; }
+    nav.actions .btn{ width:100%; justify-content:center; padding:10px 14px; border-radius:12px; min-height:44px; }
+    .btn-secondary{ background:#fff; color:#0b1b34; border-color:#dbe7ff; }
+    .btn-secondary:hover{ background:#f6f9ff; border-color:#cfe0ff; }
 
-    /* Bigger logo */
-    .logo-wrap{ display:flex; justify-content:center; margin-bottom:10px; }
-    .brand-logo{ width:260px; height:auto; display:block; }
-    h1{ margin:6px 0 4px; font-size:26px; color:var(--blue); font-weight:800; }
+    /* HOW IT WORKS (optional keep) */
+    .how{ max-width:1100px; margin:28px auto 100px; padding:0 20px; }
+    .how-card{ background:#fff; border:1px solid var(--border); border-radius:16px; box-shadow:0 10px 28px rgba(0,0,0,.06); padding:28px 22px; }
+    .how h2{ text-align:center; margin:0 0 20px; font-size:32px; font-weight:900; color:#1f2937; }
+    .steps{ display:grid; grid-template-columns:repeat(3,1fr); gap:28px; }
+    .step{ text-align:center; }
+    .icon{ width:64px; height:64px; margin:0 auto 10px; border-radius:999px; display:grid; place-items:center; background:#fff7f2; color:var(--accent); }
+    .step h3{ margin:6px 0 6px; font-size:18px; font-weight:800; color:#111; }
+    .step p{ color:#6b7280; max-width:36ch; margin:0 auto; }
 
-    /* Exact tagline text + narrow measure */
-    p.tagline{
-      margin:8px auto 16px; color:var(--muted); font-size:16px; max-width:40ch;
+    @media (max-width: 900px){
+      .steps{ grid-template-columns:1fr; }
+      .hero-wrap{ padding:72px 16px; }
     }
-
-    /* Smaller buttons (narrower + less padding) */
-    nav{
-      display:flex; flex-direction:column; gap:8px;
-      max-width:300px;
-      margin:0 auto;
-    }
-    a.btn{
-      display:block; width:100%;
-      padding:9px 14px;
-      border-radius:12px; text-decoration:none;
-      font-weight:800; font-size:15px; letter-spacing:.2px;
-      border:1px solid var(--border); transition:.2s;
-    }
-    a.primary{ background:var(--accent); color:#fff; border-color:var(--accent); }
-    a.primary:hover{ background:var(--accent-2); }
-    a.secondary{ background:#fff; color:#0b1b34; }
-    a.secondary:hover{ background:#f3f7ff; border-color:#d7e6ff; }
-    a.secondary[href*="browse"]{ color:var(--accent); border-color:#ffd7c8; }
-    a.secondary[href*="browse"]:hover{ background:#fff3ee; }
   </style>
 </head>
 <body>
   {% load static %}
 
-  <!-- Support link -->
-  <a href="{% url 'contact_support' %}" class="support-link">Support</a>
-
-  <div class="card">
-    <div class="logo-wrap">
-      <img class="brand-logo" src="{% static 'images/bookify.png' %}" alt="Bookify logo">
+  <!-- NAV -->
+  <header class="nav">
+    <div class="nav-wrap">
+      <a class="brand" href="/">Bookify</a>
+      <div class="spacer"></div>
+      <a class="nav-link" href="{% url 'restaurant_browse' %}">Browse Restaurants</a>
     </div>
+  </header>
 
-    <p class="tagline">
-      No more calls, waiting, or missed reservations.<br>
-      Book now, with Bookify.
-    </p>
-    
-    <nav>
-      <a href="{% url 'signup' %}" class="btn primary">Sign Up</a>
-      <a href="{% url 'login' %}" class="btn secondary">Log In</a>
-      <!-- ✅ Fixed link -->
-      <a href="{% url 'restaurant_browse' %}" class="btn secondary">Browse Restaurants</a>
-    </nav>
-  </div>
+  <!-- BIG HERO (slide 1) -->
+  <section class="hero" aria-labelledby="big-hero-title">
+    <div class="hero-wrap">
+      <h1 id="big-hero-title">Discover Your Next<br/>Dining Experience</h1>
+      <p class="lede">Book tables at the finest restaurants in your city. Easy reservations, exceptional experiences.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="{% url 'restaurant_browse' %}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="7"></circle>
+            <line x1="16.5" y1="16.5" x2="22" y2="22" stroke-linecap="round"></line>
+          </svg>
+          Browse Restaurants
+        </a>
+        <a class="btn btn-ghost" href="#classic-hero">Get Started</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Spacer to separate slides -->
+  <div class="section-gap" aria-hidden="true"></div>
+
+  <!-- CLASSIC CARD (slide 2) -->
+  <section class="classic-section" id="classic-hero" aria-labelledby="classic-title">
+    <div class="card">
+      <div class="logo-wrap">
+        <img class="brand-logo" src="{% static 'images/bookify.png' %}" alt="Bookify logo">
+      </div>
+
+      <h2 id="classic-title" style="position:absolute;left:-9999px">Classic Hero</h2>
+      <p class="tagline">
+        No more calls, waiting, or missed reservations.<br>
+        Book now, with Bookify.
+      </p>
+
+      <nav class="actions">
+        <a href="{% url 'signup' %}" class="btn btn-primary">Sign Up</a>
+        <a href="{% url 'login' %}" class="btn btn-secondary">Log In</a>
+        <a href="{% url 'restaurant_browse' %}" class="btn btn-secondary">Browse Restaurants</a>
+      </nav>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS (optional) -->
+  <section class="how" aria-labelledby="how-bookify-works">
+    <div class="how-card">
+      <h2 id="how-bookify-works">How Bookify Works</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="icon">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="7"></circle>
+              <line x1="16.5" y1="16.5" x2="22" y2="22" stroke-linecap="round"></line>
+            </svg>
+          </div>
+          <h3>Discover</h3>
+          <p>Browse through hundreds of restaurants by cuisine, location, or rating.</p>
+        </div>
+        <div class="step">
+          <div class="icon">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+              <line x1="3" y1="9" x2="21" y2="9"></line>
+              <line x1="8" y1="3" x2="8" y2="7"></line>
+              <line x1="16" y1="3" x2="16" y2="7"></line>
+            </svg>
+          </div>
+          <h3>Reserve</h3>
+          <p>Select your preferred date, time, and party size with just a few clicks.</p>
+        </div>
+        <div class="step">
+          <div class="icon">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 3l3.09 6.26L22 10.27l-5 4.87L18.18 22 12 18.77 5.82 22 7 15.14l-5-4.87 6.91-1.01L12 3z" stroke-linejoin="round"></path>
+            </svg>
+          </div>
+          <h3>Enjoy</h3>
+          <p>Show up and enjoy a memorable dining experience at your chosen restaurant.</p>
+        </div>
+      </div>
+    </div>
+  </section>
 </body>
 </html>
