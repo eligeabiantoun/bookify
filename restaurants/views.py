@@ -1,12 +1,28 @@
 # restaurants/views.py
 
-# ---------- API (DRF) ----------
+# ---------- stdlib ----------
+import datetime
+
+# ---------- Django / DRF imports ----------
+from django.contrib import messages
+from django.contrib.auth import logout
+from django.contrib.auth.decorators import login_required
+from django.db.models import Q
+from django.shortcuts import render, redirect
+from django.views.generic import ListView, DetailView
+
 from rest_framework import viewsets, filters
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+
+# ---------- Local imports ----------
 from .models import Restaurant
 from .serializers import RestaurantSerializer
 from .permissions import IsOwnerOrReadOnly
+from .forms import RestaurantForm
+from accounts.decorators import owner_required
 
+
+# ---------- API (DRF) ----------
 class RestaurantViewSet(viewsets.ModelViewSet):
     """
     REST API for restaurants.
@@ -27,15 +43,7 @@ class RestaurantViewSet(viewsets.ModelViewSet):
         serializer.save(owner=self.request.user)
 
 
-# ---------- Site views (HTML pages for owners) ----------
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.db.models import Q
-from accounts.decorators import owner_required
-from .forms import RestaurantForm
-
-
+# ---------- Owner site views (HTML pages) ----------
 @login_required
 @owner_required
 def owner_restaurant_create(request):
@@ -93,18 +101,24 @@ def owner_restaurant_edit(request):
     )
 
 
-# ---------- Public browse & detail views (PUBLIC for guests AND logged-in users) ----------
-from django.views.generic import ListView, DetailView
-
+# ---------- Public browse & detail views ----------
+# NOTE: Browse is guest-only by policy; if a user is logged in, we log them out here.
 class PublicRestaurantListView(ListView):
     """
-    Public list view: anyone can browse restaurants (even if logged in).
-    Booking is handled elsewhere and requires login.
+    Guest browse list:
+    - If a user is logged in, they are immediately logged out
+      and continue browsing as an anonymous (guest) visitor.
     """
     template_name = "restaurants/browse.html"
     model = Restaurant
     context_object_name = "restaurants"
     paginate_by = 12
+
+    def dispatch(self, request, *args, **kwargs):
+        # Force any authenticated user to be logged out
+        if request.user.is_authenticated:
+            logout(request)
+        return super().dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
         qs = Restaurant.objects.all().order_by("name")
@@ -124,10 +138,53 @@ class PublicRestaurantListView(ListView):
 
 
 class PublicRestaurantDetailView(DetailView):
-    """
-    Public detail page: anyone can view restaurant details.
-    Templates show 'Log in to book' for guests; logged-in users can also view it.
-    """
     template_name = "restaurants/detail.html"
     model = Restaurant
     context_object_name = "restaurant"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        r = self.object
+
+        days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        full_names = {
+            "Mon": "Monday", "Tue": "Tuesday", "Wed": "Wednesday",
+            "Thu": "Thursday", "Fri": "Friday", "Sat": "Saturday", "Sun": "Sunday",
+        }
+
+        rows = []
+        oh = getattr(r, "opening_hours", None)
+
+        if isinstance(oh, dict):
+            def pick_day(d3):
+                # Try multiple key variants to match your JSON
+                candidates = [
+                    d3, d3.lower(), d3.upper(), d3.title(),
+                    full_names[d3], full_names[d3].lower(), full_names[d3].upper(), full_names[d3].title(),
+                ]
+                for k in candidates:
+                    v = oh.get(k)
+                    if v:
+                        return v
+                return None
+
+            for d in days:
+                v = pick_day(d) or {}
+                # Support common key variants
+                o = v.get("open") or v.get("Open") or v.get("start") or v.get("from")
+                c = v.get("close") or v.get("Close") or v.get("end") or v.get("to")
+                rows.append((d, o, c))
+        else:
+            # Fallback to single opening_time / closing_time fields
+            ot = getattr(r, "opening_time", None)
+            ct = getattr(r, "closing_time", None)
+            def fmt(t):
+                try:
+                    return t.strftime("%H:%M") if t else None
+                except Exception:
+                    return t  # if already a string
+            for d in days:
+                rows.append((d, fmt(ot), fmt(ct)))
+
+        ctx["opening_rows"] = rows
+        return ctx

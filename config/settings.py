@@ -53,7 +53,7 @@ MIDDLEWARE = [
 # ---------------------------------------------------------------------
 # URLS / WSGI
 # ---------------------------------------------------------------------
-ROOT_URLCONF = "config.urls"
+ROOT_URLCONF = "config.urls"  
 WSGI_APPLICATION = "config.wsgi.application"
 
 # ---------------------------------------------------------------------
@@ -78,7 +78,6 @@ TEMPLATES = [
 # ---------------------------------------------------------------------
 # DATABASE
 # ---------------------------------------------------------------------
-# Use DATABASE_URL if provided (e.g., Postgres on Neon/Render); otherwise fall back to local SQLite
 DATABASES = {
     "default": dj_database_url.config(
         default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
@@ -86,8 +85,6 @@ DATABASES = {
     )
 }
 
-# If your provider requires SSL (Neon usually does), either ensure
-# ?sslmode=require is in the URL OR force it here:
 if DATABASES["default"]["ENGINE"].endswith("postgresql") and "OPTIONS" not in DATABASES["default"]:
     DATABASES["default"]["OPTIONS"] = {"sslmode": "require"}
 
@@ -114,7 +111,6 @@ USE_TZ = True
 # ---------------------------------------------------------------------
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
-# Optional for deployments that run collectstatic:
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # ---------------------------------------------------------------------
@@ -137,11 +133,11 @@ AUTHENTICATION_BACKENDS = [
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # ---------------------------------------------------------------------
-# AUTH FLOW (🔧 important for your bug fix)
+# AUTH FLOW (🔧 important for correct login/logout behavior)
 # ---------------------------------------------------------------------
-LOGIN_URL = "login"                       # your login url_name
-LOGIN_REDIRECT_URL = "post_login" 
-LOGOUT_REDIRECT_URL = "/"
+LOGIN_URL = "login"
+LOGIN_REDIRECT_URL = "post_login"
+LOGOUT_REDIRECT_URL = "home"   # ✅ fixed: now uses named route
 
 # ---------------------------------------------------------------------
 # DEV SECURITY HELPERS

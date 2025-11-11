@@ -81,25 +81,31 @@
 </head>
 <body>
   <div class="wrap">
-    <header>
-      <h1 class="title">Browse Restaurants</h1>
-      <div class="bar">
-        <a href="{% url 'home' %}" class="btn ghost">← Home</a>
+<header>
+  <h1 class="title">Browse Restaurants</h1>
+  <div class="bar">
+    <a href="{% url 'home' %}" class="btn ghost">← Home</a>
 
-        {# Role-aware header button (no forced ?next=) #}
-        {% if request.user.is_authenticated %}
-          {% if request.user.role == 'OWNER' %}
-            <a href="{% url 'owner_dashboard' %}" class="btn">Owner dashboard</a>
-          {% elif request.user.role == 'STAFF' %}
-            <a href="{% url 'staff_dashboard' %}" class="btn">Staff dashboard</a>
-          {% else %}
-            <a href="{% url 'customer_dashboard' %}" class="btn">My reservations</a>
-          {% endif %}
-        {% else %}
-          <a href="{% url 'login' %}" class="btn">Log in</a>
-        {% endif %}
-      </div>
-    </header>
+    {% if request.user.is_authenticated %}
+      {% if request.user.role == 'OWNER' %}
+        <a href="{% url 'owner_dashboard' %}" class="btn">Owner dashboard</a>
+      {% elif request.user.role == 'STAFF' %}
+        <a href="{% url 'staff_dashboard' %}" class="btn">Staff dashboard</a>
+      {% else %}
+        <a href="{% url 'customer_dashboard' %}" class="btn">My reservations</a>
+      {% endif %}
+
+      <form method="post" action="{% url 'logout' %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" class="btn ghost">Log out</button>
+      </form>
+    {% else %}
+      <a href="{% url 'login' %}" class="btn">Log in</a>
+      <a href="{% url 'signup' %}" class="btn">Sign Up</a>
+    {% endif %}
+  </div>
+</header>
+
 
     <div class="panel" role="region" aria-label="Filters">
       <form class="filters" method="get">

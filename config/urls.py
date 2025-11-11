@@ -12,24 +12,24 @@ from restaurants.views import (
 )
 
 urlpatterns = [
-    # Home
+    # ---------- Home ----------
     path("", TemplateView.as_view(template_name="home.html"), name="home"),
 
-    # Admin
+    # ---------- Admin ----------
     path("admin/", admin.site.urls),
 
-    # Auth (custom views)
+    # ---------- Auth (custom views) ----------
     path("signup/", a.signup_view, name="signup"),
     path("login/", a.login_view, name="login"),
-    path("logout/", a.logout_view, name="logout"),
+    path("logout/", auth_views.LogoutView.as_view(next_page="home"), name="logout"),  # built-in logout
     path("verify-email/", a.verify_email_view, name="verify_email"),
     path("post-login/", a.post_login_router, name="post_login"),
 
-    # Support / static pages
+    # ---------- Support / static pages ----------
     path("support/", a.contact_support, name="contact_support"),
     path("contact/", TemplateView.as_view(template_name="contact.html"), name="contact"),
 
-    # Password reset flow (Django auth views)
+    # ---------- Password reset flow ----------
     path(
         "password-reset/",
         auth_views.PasswordResetView.as_view(template_name="accounts/password_reset.html"),
@@ -51,19 +51,22 @@ urlpatterns = [
         name="password_reset_complete",
     ),
 
-    # Invitations
+    # ---------- Invitations ----------
     path("auth/invitations/create/", a.create_invitation_view, name="create_invitation"),
     path("accept-invite/", a.accept_invite_view, name="accept_invite"),
 
-    # Dashboards (registered experiences)
+    # ---------- Dashboards ----------
     path("dashboard/customer/", a.customer_dashboard, name="customer_dashboard"),
-    path("dashboard/customer/reservations/<int:pk>/cancel/", a.cancel_reservation, name="customer_cancel_reservation"),
+    path(
+        "dashboard/customer/reservations/<int:pk>/cancel/",
+        a.cancel_reservation,
+        name="customer_cancel_reservation",
+    ),
     path("dashboard/owner/", a.owner_dashboard, name="owner_dashboard"),
     path("dashboard/staff/", a.staff_dashboard, name="staff_dashboard"),
 
-    # Built-in auth URLs at /accounts/ (kept for password change, etc.)
+    # ---------- Built-in Django auth routes ----------
     path("accounts/", include("django.contrib.auth.urls")),
-   
 
     # ---------- Restaurants ----------
     # Public browse + detail (guest pages)
@@ -74,6 +77,6 @@ urlpatterns = [
     path("owner/restaurant/new/", owner_restaurant_create, name="owner_restaurant_create"),
     path("owner/restaurant/edit/", owner_restaurant_edit, name="owner_restaurant_edit"),
 
-    # API (if you have restaurants/api_urls.py)
+    # API 
     path("api/", include("restaurants.api_urls")),
 ]

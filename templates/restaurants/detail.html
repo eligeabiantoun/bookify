@@ -64,21 +64,18 @@
         {% else %}
           <a class="btn brand" href="{% url 'login' %}">Log in to book</a>
         {% endif %}
-        <a class="btn" href="#hours">View opening hours</a>
       </div>
 
-      <!-- Opening hours -->
-      <section id="hours" class="section" aria-label="Opening hours">
-        <h3 style="margin:0 0 10px 0">Opening hours</h3>
-        <div class="table">
-          <div class="row">
-            <div class="day">Mon – Sun</div>
-            <div class="time">{{ restaurant.opening_time|time:"H:i" }}</div>
-            <div class="time">– {{ restaurant.closing_time|time:"H:i" }}</div>
-          </div>
-        </div>
-      </section>
-    </article>
+     <!-- Opening hours -->
+<section id="hours" class="section" aria-label="Opening hours">
+  <h3 style="margin:0 0 10px 0">Opening hours</h3>
+  <div class="table">
+    {% for day, open_t, close_t in opening_rows %}
+      <div class="row">
+        <div class="day">{{ day }}</div>
+        <div class="time">{% if open_t %}{{ open_t }}{% else %}—{% endif %}</div>
+        <div class="time">– {% if close_t %}{{ close_t }}{% else %}—{% endif %}</div>
+      </div>
+    {% endfor %}
   </div>
-</body>
-</html>
+</section>
