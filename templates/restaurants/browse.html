@@ -107,22 +107,24 @@
 </header>
 
 
-    <div class="panel" role="region" aria-label="Filters">
-      <form class="filters" method="get">
-        <label class="sr" for="q">Search</label>
-        <input id="q" type="text" name="q" placeholder="Search by name or address…" value="{{ q|default:'' }}">
-        <label class="sr" for="cuisine">Cuisine</label>
-        <input id="cuisine" type="text" name="cuisine" placeholder="Cuisine (e.g., Italian, Sushi…)" value="{{ cuisine|default:'' }}">
-        <button class="btn brand" type="submit">Search</button>
-      </form>
-      <div class="chips" aria-label="Quick categories">
-        <button name="cuisine" value="Lebanese" class="chip" formmethod="get">Lebanese</button>
-        <button name="cuisine" value="Burger"   class="chip" formmethod="get">Burger</button>
-        <button name="cuisine" value="Sushi"    class="chip" formmethod="get">Sushi</button>
-        <button name="cuisine" value="Pizza"    class="chip" formmethod="get">Pizza</button>
-        <button name="cuisine" value="Cafe"     class="chip" formmethod="get">Cafe</button>
+  <div class="panel" role="region" aria-label="Filters">
+    <form class="filters" method="get">
+      <label class="sr" for="q">Search</label>
+      <input id="q" type="text" name="q" placeholder="Search by name or address…" value="{{ q|default:'' }}">
+      <label class="sr" for="cuisine">Cuisine</label>
+      <input id="cuisine" type="text" name="cuisine" placeholder="Cuisine (e.g., Italian, Sushi…)" value="{{ cuisine|default:'' }}">
+      <button class="btn brand" type="submit">Search</button>
+  
+      <!-- 🔽 MOVE THE CHIPS HERE, INSIDE THE FORM -->
+      <div class="chips" aria-label="Quick categories" style="grid-column: 1 / -1; margin-top:10px;">
+        <button type="submit" name="cuisine" value="Lebanese" class="chip">Lebanese</button>
+        <button type="submit" name="cuisine" value="Burger"   class="chip">Burger</button>
+        <button type="submit" name="cuisine" value="Sushi"    class="chip">Sushi</button>
+        <button type="submit" name="cuisine" value="Pizza"    class="chip">Pizza</button>
+        <button type="submit" name="cuisine" value="Cafe"     class="chip">Cafe</button>
       </div>
-    </div>
+    </form>
+  </div>
 
     <section class="grid" aria-label="Restaurant results">
       {% for r in restaurants %}
