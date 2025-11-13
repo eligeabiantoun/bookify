@@ -17,8 +17,24 @@
     html, body { margin:0; padding:0; scroll-behavior:smooth; font-family:system-ui,-apple-system,Segoe UI,Roboto; }
 
     /* NAV */
-    .nav{ position:sticky; top:0; z-index:50; background:rgba(11,27,52,0.95); border-bottom:1px solid rgba(255,255,255,.08); }
-    .nav-wrap{ max-width:1200px; margin:0 auto; padding:12px 20px; display:flex; align-items:center; color:#fff; }
+    .nav{
+  position:sticky;
+  top:0;
+  z-index:50;
+  background:rgba(11,27,52,0.95);
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+
+/* ⬇️ edit this one */
+.nav-wrap{
+  width:95%;              /* full width */
+  margin:10;                /* no centering */
+  padding:10px 55px;       /* space from left/right edges – adjust 32 as you like */
+  display:flex;
+  align-items:center;
+  color:#fff;
+}
+
     .brand{ font-weight:900; text-decoration:none; color:#fff; }
     .spacer{ flex:1; }
     .nav-link{ text-decoration:none; color:#fff; font-weight:600; padding:8px 12px; border-radius:8px; transition:background .2s; }
