@@ -61,10 +61,12 @@
       text-decoration: none;
       font-weight: 600;
       transition: background 0.15s ease, border-color 0.15s ease;
+      cursor: pointer;
     }
     .btn:hover { background: #101a2e; border-color: #273244; }
     .btn.primary { background: var(--primary); border-color: transparent; color: #fff; }
     .btn.primary:hover { background: var(--primary-dark); }
+    .btn.warn { border-color: #3a2a12; }
     .grid {
       display: grid;
       grid-template-columns: repeat(12, 1fr);
@@ -354,24 +356,109 @@
         </div>
       </article>
 
+      <!-- BOOKINGS MANAGEMENT -->
       <article class="card span-12">
         <div class="card-head">
           <h2>Bookings</h2>
-          <span class="badge warn">In progress</span>
-        </div>
-        <p class="ghost">
-          Booking management will arrive in the next release. You will see upcoming reservations,
-          manage seating, and notify guests from this dashboard.
-        </p>
-        <div class="actions-row">
-          <a href="{{ contact_support_url }}" class="btn">Contact support</a>
           {% if has_restaurant %}
-            <a href="{% url 'owner_restaurant_edit' %}" class="btn">Review availability</a>
+            <span class="badge ok">Live</span>
           {% else %}
-            <a href="{% url 'owner_restaurant_create' %}" class="btn">Create restaurant</a>
+            <span class="badge warn">Setup needed</span>
           {% endif %}
         </div>
-      </article>
+
+        {% if not has_restaurant %}
+          <p class="ghost">
+            Create your restaurant to start receiving and managing bookings.
+          </p>
+          <div class="actions-row">
+            <a href="{% url 'owner_restaurant_create' %}" class="btn primary">Create restaurant</a>
+          </div>
+        {% else %}
+
+          <!-- Pending -->
+          <div class="section-title">Pending reservations</div>
+          {% if pending_reservations %}
+            <ul class="list">
+              {% for r in pending_reservations %}
+                <li>
+                  <div>
+                    <strong>{{ r.restaurant_name }}</strong><br />
+                    {{ r.datetime|date:"Y-m-d" }} @ {{ r.datetime|time:"H:i" }} —
+                    {{ r.guest_name }} ({{ r.guest_email }})
+                    {% if r.party_size %}<div class="ghost">{{ r.party_size }} Guests</div>{% endif %}
+                    {% if r.notes %}<div class="ghost">Notes: {{ r.notes }}</div>{% endif %}
+                  </div>
+                  <div class="actions">
+                    <form action="{% url 'owner_confirm_reservation' r.instance.id %}" method="post" style="display:inline">
+                      {% csrf_token %}
+                      <button type="submit" class="btn primary">Confirm</button>
+                    </form>
+                    <form action="{% url 'owner_decline_reservation' r.instance.id %}" method="post" style="display:inline">
+                      {% csrf_token %}
+                      <button type="submit" class="btn">Decline</button>
+                    </form>
+                  </div>
+                </li>
+
+                
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="ghost">No pending reservations.</p>
+          {% endif %}
+
+          <!-- Upcoming (confirmed & future) -->
+          <div class="section-title" style="margin-top:16px;">Upcoming confirmed</div>
+          {% if upcoming_reservations %}
+            <ul class="list">
+              {% for r in upcoming_reservations %}
+                <li>
+                  <div>
+                    <strong>{{ r.restaurant_name }}</strong><br />
+                    {{ r.datetime|date:"Y-m-d" }} @ {{ r.datetime|time:"H:i" }} —
+                    {{ r.guest_name }} ({{ r.guest_email }})
+                    {% if r.party_size %}<div class="ghost">{{ r.party_size }} Guests</div>{% endif %}
+                  </div>
+                  <span class="badge ok">Confirmed</span>
+                </li>
+
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="ghost">No upcoming confirmed reservations.</p>
+          {% endif %}
+
+          <!-- Recent activity -->
+<div class="section-title" style="margin-top:16px;">Recent activity</div>
+{% if recent_reservations %}
+  <ul class="list">
+    {% for r in recent_reservations %}
+      <li>
+        <div>
+          <strong>{{ r.restaurant_name }}</strong><br />
+          {{ r.datetime|date:"Y-m-d" }} @ {{ r.datetime|time:"H:i" }} —
+          {{ r.guest_name }}
+          {% if r.party_size %}
+            <div class="ghost">{{ r.party_size }} Guests</div>
+          {% endif %}
+        </div>
+        <span class="badge">History</span>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p class="ghost">No recent reservations.</p>
+{% endif %}
+
+<div class="actions-row">
+  <a href="{{ contact_support_url }}" class="btn">Contact support</a>
+  <a href="{% url 'owner_restaurant_edit' %}" class="btn">Review availability</a>
+</div>
+{% endif %}
+</article>
+
+      <!-- /BOOKINGS MANAGEMENT -->
     </section>
 
     <footer class="foot">

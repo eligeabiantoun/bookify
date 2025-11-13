@@ -64,6 +64,9 @@ urlpatterns = [
     ),
     path("dashboard/owner/", a.owner_dashboard, name="owner_dashboard"),
     path("dashboard/staff/", a.staff_dashboard, name="staff_dashboard"),
+    path("owner/reservations/<int:pk>/confirm/", a.owner_confirm_reservation, name="owner_confirm_reservation"),
+    path("owner/reservations/<int:pk>/decline/", a.owner_decline_reservation, name="owner_decline_reservation"),
+
 
     # ---------- Built-in Django auth routes ----------
     path("accounts/", include("django.contrib.auth.urls")),

@@ -387,15 +387,64 @@ def cancel_reservation(request, pk):
 
     return redirect("customer_dashboard")
 
+from django.views.decorators.http import require_POST
+
+@login_required
+@require_POST
+def owner_confirm_reservation(request, pk):
+    if request.user.role != User.Roles.OWNER:
+        return HttpResponseForbidden("403")
+
+    reservation = get_object_or_404(
+        Reservation,
+        pk=pk,
+        restaurant__owner=request.user,
+    )
+
+    if reservation.status == Reservation.Status.CANCELLED:
+        messages.error(request, "This reservation was already cancelled.")
+    else:
+        reservation.status = Reservation.Status.CONFIRMED
+        reservation.save(update_fields=["status", "updated_at"])
+        messages.success(request, "Reservation confirmed.")
+
+    return redirect("owner_dashboard")
+
+
+@login_required
+@require_POST
+def owner_decline_reservation(request, pk):
+    if request.user.role != User.Roles.OWNER:
+        return HttpResponseForbidden("403")
+
+    reservation = get_object_or_404(
+        Reservation,
+        pk=pk,
+        restaurant__owner=request.user,
+    )
+
+    if reservation.status == Reservation.Status.CANCELLED:
+        messages.info(request, "This reservation was already cancelled.")
+    else:
+        # Using CANCELLED to represent a decline (you don't have DECLINED)
+        reservation.status = Reservation.Status.CANCELLED
+        reservation.save(update_fields=["status", "updated_at"])
+        messages.success(request, "Reservation declined.")
+
+    return redirect("owner_dashboard")
+
+
 
 @login_required
 def owner_dashboard(request):
     if request.user.role != User.Roles.OWNER:
         return HttpResponseForbidden("403")
 
+    # keep a single restaurant for header/opening hours display (if any)
     restaurant = Restaurant.objects.filter(owner=request.user).first()
     has_restaurant = restaurant is not None
 
+    # --- Opening hours table (unchanged) ---
     opening_hours_rows = []
     if restaurant and isinstance(restaurant.opening_hours, dict):
         ordered_days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
@@ -418,6 +467,7 @@ def owner_dashboard(request):
             elif hours:
                 opening_hours_rows.append((day, str(hours)))
 
+    # --- Staff invites (unchanged) ---
     invites_qs = (
         StaffInvitation.objects.filter(invited_by=request.user)
         .select_related("restaurant")
@@ -445,39 +495,48 @@ def owner_dashboard(request):
 
     accepted_invite_count = invites_qs.filter(accepted_at__isnull=False).count()
 
+    # --- Reservations across ALL restaurants owned by this user (FIX) ---
     pending_reservations = []
     upcoming_reservations = []
     recent_reservations = []
-    if restaurant:
-        tz = timezone.get_current_timezone()
-        now_local = timezone.localtime()
-        reservations_qs = (
-            restaurant.reservations.select_related("customer").order_by(
-                "reservation_date", "reservation_time"
-            )
+
+    tz = timezone.get_current_timezone()
+    now_local = timezone.localtime()
+
+    reservations_qs = (
+        Reservation.objects
+        .select_related("customer", "restaurant")
+        .filter(restaurant__owner=request.user)
+        .order_by("reservation_date", "reservation_time")
+    )
+
+    for reservation in reservations_qs:
+        combined = datetime.datetime.combine(
+            reservation.reservation_date, reservation.reservation_time
         )
-        for reservation in reservations_qs:
-            combined = datetime.datetime.combine(
-                reservation.reservation_date, reservation.reservation_time
-            )
-            if timezone.is_naive(combined):
-                reservation_dt = timezone.make_aware(combined, tz)
-            else:
-                reservation_dt = combined.astimezone(tz)
-            guest_name = (reservation.customer.get_full_name() or "").strip() or reservation.customer.email
-            payload = {
-                "instance": reservation,
-                "datetime": reservation_dt,
-                "guest_name": guest_name,
-                "guest_email": reservation.customer.email,
-                "notes": reservation.notes,
-            }
-            if reservation.status == Reservation.Status.PENDING:
-                pending_reservations.append(payload)
-            elif reservation.status == Reservation.Status.CONFIRMED and reservation_dt >= now_local:
-                upcoming_reservations.append(payload)
-            else:
-                recent_reservations.append(payload)
+        if timezone.is_naive(combined):
+            reservation_dt = timezone.make_aware(combined, tz)
+        else:
+            reservation_dt = combined.astimezone(tz)
+
+        guest_name = (reservation.customer.get_full_name() or "").strip() or reservation.customer.email
+
+        payload = {
+            "instance": reservation,
+            "datetime": reservation_dt,
+            "guest_name": guest_name,
+            "guest_email": reservation.customer.email,
+            "notes": reservation.notes,
+            "restaurant_name": reservation.restaurant.name,
+            "party_size": getattr(reservation, "party_size", None),
+        }
+
+        if reservation.status == Reservation.Status.PENDING:
+            pending_reservations.append(payload)
+        elif reservation.status == Reservation.Status.CONFIRMED and reservation_dt >= now_local:
+            upcoming_reservations.append(payload)
+        else:
+            recent_reservations.append(payload)
 
     recent_reservations.sort(key=lambda item: item["datetime"], reverse=True)
     recent_reservations = recent_reservations[:5]

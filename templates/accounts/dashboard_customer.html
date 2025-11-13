@@ -12,6 +12,34 @@
   <!-- Flatpickr (calendar & time) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+  <!-- Small badge styling to match white + orange theme -->
+  <style>
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 500;
+      margin-left: 8px;
+    }
+    .badge--pending {
+      background: #fff7ed;        /* very light orange */
+      color: #ea580c;             /* orange text */
+      border: 1px solid #fed7aa;  /* soft orange border */
+    }
+    .badge--confirmed {
+      background: #dcfce7;        /* light green */
+      color: #15803d;             /* green text */
+      border: 1px solid #bbf7d0;
+    }
+    .badge--cancelled {
+      background: #fee2e2;        /* light red */
+      color: #b91c1c;
+      border: 1px solid #fecaca;
+    }
+  </style>
 </head>
 <body>
   <div class="wrap">
@@ -145,12 +173,23 @@
           {% if upcoming_reservations %}
             <ul class="list">
               {% for r in upcoming_reservations %}
-                <li>
-                  <strong>{{ r.instance.restaurant.name }}</strong>
-                  <div class="muted">
-                    {{ r.instance.reservation_date }} • {{ r.instance.reservation_time|time:"H:i" }}
-                  </div>
-                </li>
+                {% with inst=r.instance|default:r %}
+                  <li>
+                    <div>
+                      <strong>{{ inst.restaurant.name }}</strong><br>
+                      {{ inst.reservation_date }} · {{ inst.reservation_time|time:"H:i" }} · {{ inst.party_size }} Guests
+                      {% if inst.status == 'PENDING' %}
+                        <span class="badge badge--pending">{{ inst.get_status_display }}</span>
+                      {% elif inst.status == 'CONFIRMED' %}
+                        <span class="badge badge--confirmed">{{ inst.get_status_display }}</span>
+                      {% elif inst.status == 'CANCELLED' %}
+                        <span class="badge badge--cancelled">{{ inst.get_status_display }}</span>
+                      {% else %}
+                        <span class="badge">{{ inst.get_status_display }}</span>
+                      {% endif %}
+                    </div>
+                  </li>
+                {% endwith %}
               {% endfor %}
             </ul>
           {% else %}
@@ -163,12 +202,23 @@
             <h2>Recent reservations</h2>
             <ul class="list">
               {% for r in past_reservations %}
-                <li>
-                  <strong>{{ r.instance.restaurant.name }}</strong>
-                  <div class="muted">
-                    {{ r.instance.reservation_date }} • {{ r.instance.reservation_time|time:"H:i" }}
-                  </div>
-                </li>
+                {% with inst=r.instance|default:r %}
+                  <li>
+                    <strong>{{ inst.restaurant.name }}</strong>
+                    <div class="muted">
+                      {{ inst.reservation_date }} • {{ inst.reservation_time|time:"H:i" }} • {{ inst.party_size }} Guests
+                      {% if inst.status == 'PENDING' %}
+                        <span class="badge badge--pending">{{ inst.get_status_display }}</span>
+                      {% elif inst.status == 'CONFIRMED' %}
+                        <span class="badge badge--confirmed">{{ inst.get_status_display }}</span>
+                      {% elif inst.status == 'CANCELLED' %}
+                        <span class="badge badge--cancelled">{{ inst.get_status_display }}</span>
+                      {% else %}
+                        <span class="badge">{{ inst.get_status_display }}</span>
+                      {% endif %}
+                    </div>
+                  </li>
+                {% endwith %}
               {% endfor %}
             </ul>
           </div>
@@ -177,37 +227,37 @@
     </main>
   </div>
 
- <!-- Keep or remove depending on if you created pickers.js -->
-<script src="{% static 'js/pickers.js' %}"></script>
+  <!-- Keep or remove depending on if you created pickers.js -->
+  <script src="{% static 'js/pickers.js' %}"></script>
 
-<!-- Inline calendar/time picker initializer -->
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    if (!window.flatpickr) { console.warn('Flatpickr failed to load'); return; }
+  <!-- Inline calendar/time picker initializer -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      if (!window.flatpickr) { console.warn('Flatpickr failed to load'); return; }
 
-    // Attach date pickers
-    document.querySelectorAll('input.datepicker, input[name="reservation_date"]').forEach(function (el) {
-      try { el.setAttribute('type', 'text'); } catch (e) {}
-      flatpickr(el, {
-        altInput: true,
-        altFormat: "D, M j, Y",
-        dateFormat: "Y-m-d",
-        minDate: "today"
+      // Attach date pickers
+      document.querySelectorAll('input.datepicker, input[name="reservation_date"]').forEach(function (el) {
+        try { el.setAttribute('type', 'text'); } catch (e) {}
+        flatpickr(el, {
+          altInput: true,
+          altFormat: "D, M j, Y",
+          dateFormat: "Y-m-d",
+          minDate: "today"
+        });
+      });
+
+      // Attach time pickers
+      document.querySelectorAll('input.timepicker, input[name="reservation_time"]').forEach(function (el) {
+        try { el.setAttribute('type', 'text'); } catch (e) {}
+        flatpickr(el, {
+          enableTime: true,
+          noCalendar: true,
+          dateFormat: "H:i",
+          time_24hr: true,
+          minuteIncrement: 15
+        });
       });
     });
-
-    // Attach time pickers
-    document.querySelectorAll('input.timepicker, input[name="reservation_time"]').forEach(function (el) {
-      try { el.setAttribute('type', 'text'); } catch (e) {}
-      flatpickr(el, {
-        enableTime: true,
-        noCalendar: true,
-        dateFormat: "H:i",
-        time_24hr: true,
-        minuteIncrement: 15
-      });
-    });
-  });
-</script>
+  </script>
 </body>
 </html>
