@@ -2,9 +2,8 @@
 
 Bookify is a web-based application designed to allow users to discover, browse, and reserve tables at restaurants through a simple and intuitive interface. The platform provides a clean homepage that offers quick access to the main user actions, including sign-up, log-in, and browsing options. Each user role, namely Owner, Customer, and Admin, has access to a dedicated dashboard with personalized functionality and a clear navigation structure that enhances the overall user experience.
 
-The project aims to establish a complete restaurant booking and management system that integrates essential functionalities such as role-based dashboards, table reservations, real-time queue management, reservation confirmations, and restaurant performance analytics. The interface is structured to be responsive and user-friendly, ensuring accessibility and ease of use across various devices. The design philosophy emphasizes scalability, maintainability, and a clean separation between the front-end presentation and back-end logic.
+The project aims to establish a complete restaurant booking and management system that integrates essential functionalities such as role-based dashboards, table reservations, real-time queue management, and reservation confirmations. The interface is structured to be responsive and user-friendly, ensuring accessibility and ease of use across various devices. The design philosophy emphasizes scalability, maintainability, and a clean separation between the front-end presentation and back-end logic.
 
-At its current stage, Bookify is in Sprint 2, which focuses on continuing with the project’s core architecture, implementing the authentication system, and developing the initial user dashboards. In the upcoming sprints, the team will focus on building and integrating the main MVP features, including real-time queue management, restaurant analytics, and further user interface enhancements that will collectively shape the platform into a complete reservation system.
 
 To run Bookify locally on macOS or Linux, the user should begin by cloning the repository using the command  
 `git clone https://github.com/eligeabiantoun/bookify.git`  
@@ -24,7 +23,7 @@ The Bookify application is developed using the Django framework in Python for th
 
 Bookify represents the foundation of a scalable, feature-rich restaurant booking platform that emphasizes structured design, clarity, and effective collaboration. It is being developed as part of a broader roadmap that envisions continuous improvement, advanced analytics, and integration of modern web technologies. The project reflects the team’s commitment to creating a practical solution that aligns technical precision with user-centric design.
 
-Collaborators: Rasha Al Annan, Elige Abi Antoun, Elodie El Feghali, Ralph Nasr, and Nathalio Hassoun.
+Collaborators: Natalio Hassoun, Rasha Al Annan, Elige Abi Antoun, Elodie El Feghali, and Ralph Nasr.
 
 Thank you for exploring Bookify.
 
