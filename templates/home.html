@@ -109,7 +109,12 @@
   <!-- HERO -->
   <section class="hero" aria-labelledby="hero-title">
     <div class="hero-wrap">
-      <h1 id="hero-title">Discover Your Next<br>Dining Experience</h1>
+      <div class="hero-heading-wrap">
+        <img src="{% static 'images/ring.png' %}"
+             alt="Bookify logo"
+             class="hero-logo">
+        <h1 class="hero-title">Discover Your Next Dining Experience</h1>
+      </div>      
       <p class="lede">Book tables at the finest restaurants in your city. Easy reservations, exceptional experiences.</p>
       <div class="cta-row">
         <a class="btn btn-primary" href="{% url 'restaurant_browse' %}">
