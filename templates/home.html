@@ -25,6 +25,20 @@
   border-bottom:1px solid rgba(255,255,255,.08);
 }
 
+.nav-logout-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  font: inherit;           /* same font size & weight as Support */
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.nav-logout-btn:hover {
+  background: rgba(255,255,255,.1);
+  border-radius: 8px;
+}
+
 /* ⬇️ edit this one */
 .nav-wrap{
   width:95%;              /* full width */
@@ -119,6 +133,16 @@
       <a class="brand" href="/">Bookify</a>
      <div class="spacer"></div>
       <a class="nav-link" href="{% url 'contact_support' %}">Support</a>
+      {% if user.is_authenticated %}
+        <form action="{% url 'logout' %}" method="post" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" class="nav-link nav-logout-btn">
+            Log out
+          </button>
+        </form>
+      {% else %}
+        <a class="nav-link" href="{% url 'login' %}">Log in</a>
+    {% endif %}
     </div>
   </header>
 
@@ -150,10 +174,45 @@
       <div class="logo-wrap">
         <img src="{% static 'images/bookify.png' %}" alt="Bookify Logo" />
       </div>
-      <p class="tagline">No more calls, waiting, or missed reservations.<br>Book now, with Bookify.</p>
+      <p class="tagline">
+        No more calls, waiting, or missed reservations.<br>Book now, with Bookify.</p>
       <nav class="actions">
-        <a href="{% url 'signup' %}" class="btn btn-primary">Sign Up</a>
-        <a href="{% url 'login' %}" class="btn btn-secondary">Log In</a>
+        {% if user.is_authenticated %}
+
+          {# Main button: go to the correct dashboard #}
+          {% if request.user.role == 'OWNER' %}
+            <a href="{% url 'owner_dashboard' %}" class="btn btn-primary">
+              Profile
+            </a>
+          {% elif request.user.role == 'CUSTOMER' %}
+            <a href="{% url 'customer_dashboard' %}" class="btn btn-primary">
+              Profile
+            </a>
+          {% elif request.user.role == 'STAFF' %}
+            <a href="{% url 'staff_dashboard' %}" class="btn btn-primary">
+              Profile
+            </a>
+          {% else %}
+            <a href="{% url 'owner_dashboard' %}" class="btn btn-primary">
+              Profile
+            </a>
+          {% endif %}
+          
+          <form method="post" action="{% url 'logout' %}" style="margin:0; padding:0;">
+            {% csrf_token %}
+            <button type="submit" 
+            class="btn btn-secondary" 
+            style="width:100%;font-size:18px; font-weight:600;">
+              Log out
+            </button>
+          </form>
+
+        {% else %}
+
+          <a href="{% url 'signup' %}" class="btn btn-primary">Sign Up</a>
+          <a href="{% url 'login' %}" class="btn btn-secondary">Log In</a>
+
+        {% endif %}
       </nav>
     </div>
   </section>

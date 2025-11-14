@@ -88,7 +88,7 @@
 
     {% if request.user.is_authenticated %}
       {% if request.user.role == 'OWNER' %}
-        <a href="{% url 'owner_dashboard' %}" class="btn">Owner dashboard</a>
+        <a href="{% url 'owner_dashboard' %}" class="btn">Your profile</a>
       {% elif request.user.role == 'STAFF' %}
         <a href="{% url 'staff_dashboard' %}" class="btn">Staff dashboard</a>
       {% else %}

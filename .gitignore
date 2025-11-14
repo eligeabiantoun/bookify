@@ -214,3 +214,5 @@ __pycache__/
 .vscode/
 staticfiles/
 media/
+
+config/firebase-service-account.json
