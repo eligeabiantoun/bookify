@@ -114,11 +114,11 @@ class PublicRestaurantListView(ListView):
     context_object_name = "restaurants"
     paginate_by = 12
 
-    def dispatch(self, request, *args, **kwargs):
+    #def dispatch(self, request, *args, **kwargs):
         # Force any authenticated user to be logged out
-        if request.user.is_authenticated:
-            logout(request)
-        return super().dispatch(request, *args, **kwargs)
+       # if request.user.is_authenticated:
+       #     logout(request)
+       # return super().dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
         qs = Restaurant.objects.all().order_by("name")
