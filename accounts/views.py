@@ -18,13 +18,18 @@ from .models import StaffInvitation, User
 from restaurants.forms import ReservationForm
 from restaurants.models import Reservation, Restaurant
 
+#RX12F4P7X4FMXJCAZJM5963U
 
 def _send_verification_email(user, request):
     token = user.make_email_token()
     link = request.build_absolute_uri(reverse("verify_email") + f"?token={token}")
     send_mail(
         subject="Verify your Bookify email",
-        message=f"Click to verify your account: {link}",
+        message=(
+            f"Hi {user.first_name or ''},\n\n"
+            f"Please verify your email by clicking this link:\n{link}\n\n"
+            "If you didn’t request this, you can ignore this email."
+        ),
         from_email=None,  # uses DEFAULT_FROM_EMAIL
         recipient_list=[user.email],
     )
@@ -34,8 +39,12 @@ def signup_view(request):
 
     if request.method == "POST":
         if request.POST.get("role") == User.Roles.STAFF:
-            messages.error(request, "Staff accounts are invite-only. Ask your manager for an invite link.")
+            messages.error(
+                request,
+                "Staff accounts are invite-only. Ask your manager for an invite link.",
+            )
             return redirect("signup")
+
         form = SignupForm(request.POST)
         if form.is_valid():
             user = User.objects.create_user(
@@ -46,12 +55,16 @@ def signup_view(request):
                 role=form.cleaned_data["role"],
             )
             _send_verification_email(user, request)
-            return render(request, "accounts/verify_prompt.html", {"email": user.email})
+            return render(
+                request,
+                "accounts/verify_prompt.html",
+                {"email": user.email},
+            )
         else:
             return render(request, "accounts/signup.html", {"form": form}, status=400)
+
     form = SignupForm()
     return render(request, "accounts/signup.html", {"form": form})
-
 
 def login_view(request):
     """
