@@ -12,6 +12,7 @@ from django.urls import reverse, resolve  # ✅ ADDED resolve
 from django.utils import timezone
 from django.utils.timesince import timesince
 from django.utils.http import url_has_allowed_host_and_scheme  # ✅ ADDED
+from django.views.decorators.http import require_POST
 
 from .forms import LoginForm, SignupForm
 from .models import StaffInvitation, User
@@ -31,10 +32,12 @@ def _send_verification_email(user, request):
 
 
 def signup_view(request):
-
     if request.method == "POST":
         if request.POST.get("role") == User.Roles.STAFF:
-            messages.error(request, "Staff accounts are invite-only. Ask your manager for an invite link.")
+            messages.error(
+                request,
+                "Staff accounts are invite-only. Ask your manager for an invite link.",
+            )
             return redirect("signup")
         form = SignupForm(request.POST)
         if form.is_valid():
@@ -46,9 +49,18 @@ def signup_view(request):
                 role=form.cleaned_data["role"],
             )
             _send_verification_email(user, request)
-            return render(request, "accounts/verify_prompt.html", {"email": user.email})
+            return render(
+                request,
+                "accounts/verify_prompt.html",
+                {"email": user.email},
+            )
         else:
-            return render(request, "accounts/signup.html", {"form": form}, status=400)
+            return render(
+                request,
+                "accounts/signup.html",
+                {"form": form},
+                status=400,
+            )
     form = SignupForm()
     return render(request, "accounts/signup.html", {"form": form})
 
@@ -71,7 +83,11 @@ def login_view(request):
                 messages.error(request, "Invalid credentials.")
             else:
                 if not user.is_email_verified:
-                    return render(request, "accounts/verify_prompt.html", {"email": user.email})
+                    return render(
+                        request,
+                        "accounts/verify_prompt.html",
+                        {"email": user.email},
+                    )
 
                 login(request, user)
 
@@ -92,11 +108,15 @@ def login_view(request):
                     # Role -> allowed dashboard
                     role_to_dash = {
                         User.Roles.CUSTOMER: "customer_dashboard",
-                        User.Roles.OWNER:    "owner_dashboard",
-                        User.Roles.STAFF:    "staff_dashboard",
+                        User.Roles.OWNER: "owner_dashboard",
+                        User.Roles.STAFF: "staff_dashboard",
                     }
                     allowed_dash = role_to_dash.get(user.role)
-                    dashboard_names = {"customer_dashboard", "owner_dashboard", "staff_dashboard"}
+                    dashboard_names = {
+                        "customer_dashboard",
+                        "owner_dashboard",
+                        "staff_dashboard",
+                    }
 
                     # If next points to a dashboard that isn't the user's → override
                     if target_name in dashboard_names and target_name != allowed_dash:
@@ -105,8 +125,12 @@ def login_view(request):
                     # Don't send logged-in users to guest/public routes
                     name_lc = (target_name or "").lower()
                     path_lc = (path or "").lower()
-                    is_guestish = any(k in name_lc for k in ("guest", "public", "unregistered")) or \
-                                  any(seg in path_lc for seg in ("/guest", "/public", "/unregistered"))
+                    is_guestish = any(
+                        k in name_lc for k in ("guest", "public", "unregistered")
+                    ) or any(
+                        seg in path_lc
+                        for seg in ("/guest", "/public", "/unregistered")
+                    )
                     if is_guestish:
                         return redirect(allowed_dash or "customer_dashboard")
 
@@ -119,10 +143,15 @@ def login_view(request):
         form = LoginForm()
 
     # Keep carrying ?next= to the form (your login.html has a hidden input named "next")
-    return render(request, "registration/login.html", {
-        "form": form,
-        "next": request.GET.get("next", "")
-    })
+    return render(
+        request,
+        "registration/login.html",
+        {
+            "form": form,
+            "next": request.GET.get("next", ""),
+        },
+    )
+
 
 def logout_view(request):
     logout(request)
@@ -164,9 +193,7 @@ def is_owner(u):
 @login_required
 @user_passes_test(is_owner)
 def create_invitation_view(request):
-
     """Owner creates a staff invitation."""
-
     restaurant = Restaurant.objects.filter(owner=request.user).first()
     if restaurant is None:
         messages.error(request, "Create your restaurant before inviting staff.")
@@ -184,14 +211,18 @@ def create_invitation_view(request):
             expires_at__gt=timezone.now(),
         ).first()
         if existing:
-            messages.warning(request, f"An active invite already exists for {email}.")
+            messages.warning(
+                request, f"An active invite already exists for {email}."
+            )
             return redirect("owner_dashboard")
         inv = StaffInvitation.new_invite(
             email=email,
             invited_by=request.user,
             restaurant=restaurant,
         )
-        link = request.build_absolute_uri(reverse("accept_invite") + f"?token={inv.token}")
+        link = request.build_absolute_uri(
+            reverse("accept_invite") + f"?token={inv.token}"
+        )
         send_mail(
             subject="Your Bookify staff invite",
             message=f"Open this link to join: {link}",
@@ -204,10 +235,12 @@ def create_invitation_view(request):
 
 
 def accept_invite_view(request):
-
     """Staff accepts invitation and sets a password."""
-
-    token = request.GET.get("token") if request.method == "GET" else request.POST.get("token")
+    token = (
+        request.GET.get("token")
+        if request.method == "GET"
+        else request.POST.get("token")
+    )
     inv = StaffInvitation.objects.filter(token=token).first()
     if not inv or not inv.is_valid():
         return render(
@@ -218,7 +251,12 @@ def accept_invite_view(request):
         )
     if request.method == "POST":
         pwd = request.POST.get("password")
-        if pwd and len(pwd) >= 8 and any(c.isalpha() for c in pwd) and any(c.isdigit() for c in pwd):
+        if (
+            pwd
+            and len(pwd) >= 8
+            and any(c.isalpha() for c in pwd)
+            and any(c.isdigit() for c in pwd)
+        ):
             user = User.objects.create_user(
                 email=inv.email,
                 password=pwd,
@@ -229,8 +267,15 @@ def accept_invite_view(request):
             inv.save()
             messages.success(request, "Account created. You can log in.")
             return redirect("login")
-        messages.error(request, "Password must be at least 8 chars, with letters and digits.")
-    return render(request, "accounts/accept_invite.html", {"token": token})
+        messages.error(
+            request,
+            "Password must be at least 8 chars, with letters and digits.",
+        )
+    return render(
+        request,
+        "accounts/accept_invite.html",
+        {"token": token},
+    )
 
 
 @login_required
@@ -240,6 +285,7 @@ def customer_dashboard(request):
 
     search_query = (request.GET.get("q") or "").strip()
 
+    # ---------- RESTAURANT LIST + SEARCH ----------
     restaurants_qs = Restaurant.objects.all()
     if search_query:
         restaurants_qs = restaurants_qs.filter(
@@ -250,9 +296,10 @@ def customer_dashboard(request):
     restaurants_qs = restaurants_qs.order_by("-rating", "name")
     restaurants_list = list(restaurants_qs)
 
-    reservation_form_with_errors = None
-    active_restaurant_id = None
+    reservation_form_with_errors = None    # a ReservationForm with errors, or None
+    active_restaurant_id = None            # which card should show the errors
 
+    # ---------- HANDLE RESERVATION POST ----------
     if request.method == "POST":
         form = ReservationForm(
             request.POST,
@@ -263,17 +310,15 @@ def customer_dashboard(request):
             reservation.customer = request.user
             reservation.status = Reservation.Status.PENDING
             reservation.save()
-            messages.success(
-                request,
-                "Reservation request submitted! We'll email you once the restaurant confirms.",
-            )
             return redirect("customer_dashboard")
+        # form invalid – keep errors attached to the right restaurant card
         reservation_form_with_errors = form
         try:
             active_restaurant_id = int(request.POST.get("restaurant"))
         except (TypeError, ValueError):
             active_restaurant_id = None
 
+    # ---------- OPENING HOURS HELPER ----------
     def build_opening_hours_rows(raw_hours):
         rows = []
         if isinstance(raw_hours, dict):
@@ -290,6 +335,7 @@ def customer_dashboard(request):
                     )
                 else:
                     rows.append((day, str(hours)))
+            # Include any extra/custom keys
             for day, hours in raw_hours.items():
                 if day in seen:
                     continue
@@ -301,6 +347,7 @@ def customer_dashboard(request):
                     rows.append((day, str(hours)))
         return rows
 
+    # ---------- BUILD RESTAURANT CARDS PAYLOAD ----------
     restaurants_payload = []
     for restaurant in restaurants_list:
         if (
@@ -322,16 +369,20 @@ def customer_dashboard(request):
             }
         )
 
+    # ---------- CUSTOMER RESERVATIONS: UPCOMING vs PAST ----------
     tz = timezone.get_current_timezone()
-    now_local = timezone.localtime()
+    today = timezone.localdate()
     upcoming = []
     past = []
+
     reservations_qs = (
         Reservation.objects.filter(customer=request.user)
         .select_related("restaurant")
         .order_by("reservation_date", "reservation_time")
     )
+
     for reservation in reservations_qs:
+        # Build a datetime purely for sorting / display; classification uses DATE only
         combined = datetime.datetime.combine(
             reservation.reservation_date, reservation.reservation_time
         )
@@ -339,18 +390,25 @@ def customer_dashboard(request):
             reservation_dt = timezone.make_aware(combined, tz)
         else:
             reservation_dt = combined.astimezone(tz)
+
         payload = {
             "instance": reservation,
             "datetime": reservation_dt,
         }
+
+        # ✅ Logic:
+        # - If date is today or in the future AND status is not CANCELLED/DECLINED → UPCOMING
+        # - Otherwise → PAST & CANCELLED
         if (
-            reservation.status != Reservation.Status.CANCELLED
-            and reservation_dt >= now_local
+            reservation.reservation_date >= today
+            and reservation.status
+            not in (Reservation.Status.CANCELLED, Reservation.Status.DECLINED)
         ):
             upcoming.append(payload)
         else:
             past.append(payload)
 
+    # newest past first
     past.sort(key=lambda item: item["datetime"], reverse=True)
 
     context = {
@@ -381,13 +439,11 @@ def cancel_reservation(request, pk):
         else:
             reservation.status = Reservation.Status.CANCELLED
             reservation.save(update_fields=["status", "updated_at"])
-            messages.success(request, "Reservation cancelled.")
     else:
         messages.error(request, "Invalid request.")
 
     return redirect("customer_dashboard")
 
-from django.views.decorators.http import require_POST
 
 @login_required
 @require_POST
@@ -406,7 +462,6 @@ def owner_confirm_reservation(request, pk):
     else:
         reservation.status = Reservation.Status.CONFIRMED
         reservation.save(update_fields=["status", "updated_at"])
-        messages.success(request, "Reservation confirmed.")
 
     return redirect("owner_dashboard")
 
@@ -423,24 +478,24 @@ def owner_decline_reservation(request, pk):
         restaurant__owner=request.user,
     )
 
-    if reservation.status == Reservation.Status.CANCELLED:
-        messages.info(request, "This reservation was already cancelled.")
+    if reservation.status in (
+        Reservation.Status.CANCELLED,
+        Reservation.Status.DECLINED,
+    ):
+        messages.info(request, "This reservation was already cancelled/declined.")
     else:
-        # Using CANCELLED to represent a decline (you don't have DECLINED)
-        reservation.status = Reservation.Status.CANCELLED
+        reservation.status = Reservation.Status.DECLINED
         reservation.save(update_fields=["status", "updated_at"])
         messages.success(request, "Reservation declined.")
 
     return redirect("owner_dashboard")
-
-
 
 @login_required
 def owner_dashboard(request):
     if request.user.role != User.Roles.OWNER:
         return HttpResponseForbidden("403")
 
-    # keep a single restaurant for header/opening hours display (if any)
+    # Single restaurant for header/opening-hours display (if any)
     restaurant = Restaurant.objects.filter(owner=request.user).first()
     has_restaurant = restaurant is not None
 
@@ -495,17 +550,16 @@ def owner_dashboard(request):
 
     accepted_invite_count = invites_qs.filter(accepted_at__isnull=False).count()
 
-    # --- Reservations across ALL restaurants owned by this user (FIX) ---
+    # --- Reservations across ALL restaurants owned by this user ---
     pending_reservations = []
     upcoming_reservations = []
-    recent_reservations = []
+    has_cancelled_upcoming = False
 
     tz = timezone.get_current_timezone()
     now_local = timezone.localtime()
 
     reservations_qs = (
-        Reservation.objects
-        .select_related("customer", "restaurant")
+        Reservation.objects.select_related("customer", "restaurant")
         .filter(restaurant__owner=request.user)
         .order_by("reservation_date", "reservation_time")
     )
@@ -519,7 +573,10 @@ def owner_dashboard(request):
         else:
             reservation_dt = combined.astimezone(tz)
 
-        guest_name = (reservation.customer.get_full_name() or "").strip() or reservation.customer.email
+        guest_name = (
+            (reservation.customer.get_full_name() or "").strip()
+            or reservation.customer.email
+        )
 
         payload = {
             "instance": reservation,
@@ -531,15 +588,24 @@ def owner_dashboard(request):
             "party_size": getattr(reservation, "party_size", None),
         }
 
-        if reservation.status == Reservation.Status.PENDING:
+        # Future pending reservations
+        if (
+            reservation.status == Reservation.Status.PENDING
+            and reservation_dt >= now_local
+        ):
             pending_reservations.append(payload)
-        elif reservation.status == Reservation.Status.CONFIRMED and reservation_dt >= now_local:
-            upcoming_reservations.append(payload)
-        else:
-            recent_reservations.append(payload)
 
-    recent_reservations.sort(key=lambda item: item["datetime"], reverse=True)
-    recent_reservations = recent_reservations[:5]
+        # Future confirmed or cancelled reservations → upcoming section
+        elif (
+            reservation.status
+            in (Reservation.Status.CONFIRMED, Reservation.Status.CANCELLED)
+            and reservation_dt >= now_local
+        ):
+            upcoming_reservations.append(payload)
+            if reservation.status == Reservation.Status.CANCELLED:
+                has_cancelled_upcoming = True
+
+        # Past reservations are not needed anymore (no recent section)
 
     context = {
         "restaurant": restaurant,
@@ -552,7 +618,9 @@ def owner_dashboard(request):
         "contact_support_url": reverse("contact_support"),
         "pending_reservations": pending_reservations,
         "upcoming_reservations": upcoming_reservations,
-        "recent_reservations": recent_reservations,
+        "has_cancelled_upcoming": has_cancelled_upcoming,
+        # Keep key for backwards compatibility; template can stop using it.
+        "recent_reservations": [],
     }
 
     return render(request, "accounts/dashboard_owner.html", context)

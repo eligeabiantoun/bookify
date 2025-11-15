@@ -8,14 +8,15 @@ from django.contrib import messages
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, DetailView
+from django.views.decorators.http import require_POST
 
 from rest_framework import viewsets, filters
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 # ---------- Local imports ----------
-from .models import Restaurant
+from .models import Restaurant, Reservation
 from .serializers import RestaurantSerializer
 from .permissions import IsOwnerOrReadOnly
 from .forms import RestaurantForm
@@ -114,11 +115,11 @@ class PublicRestaurantListView(ListView):
     context_object_name = "restaurants"
     paginate_by = 12
 
-    #def dispatch(self, request, *args, **kwargs):
-        # Force any authenticated user to be logged out
-       # if request.user.is_authenticated:
-       #     logout(request)
-       # return super().dispatch(request, *args, **kwargs)
+    # def dispatch(self, request, *args, **kwargs):
+    #     # Force any authenticated user to be logged out
+    #     if request.user.is_authenticated:
+    #         logout(request)
+    #     return super().dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
         qs = Restaurant.objects.all().order_by("name")
@@ -178,13 +179,42 @@ class PublicRestaurantDetailView(DetailView):
             # Fallback to single opening_time / closing_time fields
             ot = getattr(r, "opening_time", None)
             ct = getattr(r, "closing_time", None)
+
             def fmt(t):
                 try:
                     return t.strftime("%H:%M") if t else None
                 except Exception:
                     return t  # if already a string
+
             for d in days:
                 rows.append((d, fmt(ot), fmt(ct)))
 
         ctx["opening_rows"] = rows
         return ctx
+
+
+# ---------- Customer reservation actions ----------
+@login_required
+@require_POST
+def cancel_reservation(request, pk):
+    """
+    Allow a logged-in customer to cancel their own reservation
+    if it is pending or confirmed.
+    """
+    reservation = get_object_or_404(
+        Reservation,
+        pk=pk,
+        customer=request.user,
+    )
+
+    if reservation.status not in ("pending", "confirmed"):
+        messages.error(request, "This reservation cannot be cancelled.")
+        # Change "customer_dashboard" if your dashboard URL name is different.
+        return redirect("customer_dashboard")
+
+    reservation.status = "cancelled"
+    reservation.save()
+
+    messages.success(request, "Your reservation has been cancelled.")
+    # Change "customer_dashboard" if your dashboard URL name is different.
+    return redirect("customer_dashboard")
