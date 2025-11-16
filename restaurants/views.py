@@ -57,7 +57,7 @@ def owner_restaurant_create(request):
         return redirect("owner_restaurant_edit")
 
     if request.method == "POST":
-        form = RestaurantForm(request.POST)
+        form = RestaurantForm(request.POST,request.FILES)
         if form.is_valid():
             r = form.save(commit=False)
             r.owner = request.user
@@ -87,7 +87,7 @@ def owner_restaurant_edit(request):
         return redirect("owner_restaurant_create")
 
     if request.method == "POST":
-        form = RestaurantForm(request.POST, instance=restaurant)
+        form = RestaurantForm(request.POST,request.FILES,instance=restaurant)
         if form.is_valid():
             form.save()
             messages.success(request, "Restaurant updated.")

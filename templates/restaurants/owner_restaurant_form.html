@@ -141,8 +141,23 @@
       font-size:14px;
     }
 
+    input[type="file"]{
+      width:100%;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background:#ffffff;
+      color:var(--text);
+      font-size:14px;
+    }
+
     input:focus,
     textarea:focus{
+      border-color:var(--primary);
+      box-shadow:0 0 0 1px rgba(249,115,22,.15);
+    }
+
+    input[type="file"]:focus{
       border-color:var(--primary);
       box-shadow:0 0 0 1px rgba(249,115,22,.15);
     }
@@ -306,6 +321,16 @@
     .quick-actions{
       justify-content:flex-start;
     }
+
+    .photo-preview{
+      width:72px;
+      height:72px;
+      border-radius:14px;
+      object-fit:cover;
+      border:1px solid var(--border);
+      margin-top:8px;
+      display:block;
+    }
   </style>
 </head>
 <body>
@@ -321,7 +346,7 @@
         </div>
       </div>
 
-      <form method="post" id="restaurant-form">
+      <form method="post" enctype="multipart/form-data" id="restaurant-form">
         {% csrf_token %}
 
         {% if form.non_field_errors %}
@@ -357,13 +382,34 @@
           {% for e in form.description.errors %}<div class="field-error">{{ e }}</div>{% endfor %}
         </div>
 
+        <div>
+          <label for="{{ form.photo.id_for_label }}">Restaurant picture</label>
+          {{ form.photo }}
+          <div class="help">Upload a clear photo or logo of your restaurant (optional).</div>
+          {% for e in form.photo.errors %}<div class="field-error">{{ e }}</div>{% endfor %}
+
+          {% if form.instance.photo %}
+            <div class="help" style="margin-top:8px;">Current picture:</div>
+            <img src="{{ form.instance.photo.url }}"
+                 alt="{{ form.instance.name }} current picture"
+                 class="photo-preview"
+                 id="photo-current">
+          {% endif %}
+
+          <div class="help" style="margin-top:8px;">Preview of new upload:</div>
+          <img src=""
+               alt="New upload preview"
+               class="photo-preview"
+               id="photo-preview"
+               style="display:none;">
+        </div>
+
         <div class="opening-section">
           <label for="{{ form.opening_hours.id_for_label }}">Opening hours</label>
           <div class="help">Toggle which days you are open, then choose opening and closing times.</div>
           {{ form.opening_hours }}
 
           <div class="hours-grid" id="opening-hours-grid">
-            <!-- day blocks unchanged (Mon–Sun) -->
             <!-- Mon -->
             <div class="day-block" data-day="Mon">
               <div class="day-row">
@@ -437,7 +483,6 @@
               </div>
             </div>
             <!-- Fri -->
-                       <!-- Fri -->
             <div class="day-block" data-day="Fri">
               <div class="day-row">
                 <span class="day-name">Fri</span>
@@ -498,6 +543,7 @@
           <div class="row quick-actions">
             <span class="badge" data-preset="copy-mon">Copy Monday to all</span>
             <span class="badge" id="clear-opening-hours">Clear all</span>
+
           </div>
 
           {% for e in form.opening_hours.errors %}
@@ -642,6 +688,26 @@
       });
     })();
   </script>
+
+  <script>
+    (function(){
+      const input = document.getElementById('id_photo');
+      const preview = document.getElementById('photo-preview');
+
+      if(!input || !preview){ return; }
+
+      input.addEventListener('change', function(){
+        const file = this.files && this.files[0];
+        if(!file){
+          preview.style.display = 'none';
+          preview.removeAttribute('src');
+          return;
+        }
+        const url = URL.createObjectURL(file);
+        preview.src = url;
+        preview.style.display = 'block';
+      });
+    })();
+  </script>
 </body>
 </html>
-

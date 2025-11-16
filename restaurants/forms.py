@@ -25,6 +25,7 @@ class RestaurantForm(forms.ModelForm):
             "capacity",
             "description",
             "opening_hours",
+             "photo",
         ]
 
     def __init__(self, *args, **kwargs):

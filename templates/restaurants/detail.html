@@ -12,27 +12,69 @@
       --shadow:0 6px 24px rgba(0,0,0,.06); --shadow-sm:0 1px 3px rgba(0,0,0,.06);
     }
     *{box-sizing:border-box}
-    body{margin:0; background:var(--bg); color:var(--text); font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;}
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
     .wrap{max-width:960px; margin:0 auto; padding:24px 18px}
 
-    .btn{display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border-radius:12px;
-         border:1px solid var(--line); background:#fff; font-weight:600; text-decoration:none; color:inherit; box-shadow:var(--shadow-sm)}
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 14px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:#fff;
+      font-weight:600;
+      text-decoration:none;
+      color:inherit;
+      box-shadow:var(--shadow-sm);
+    }
     .btn:hover{background:#fcfcfc}
     .btn.brand{background:var(--brand); border-color:var(--brand); color:#fff}
     .btn.brand:hover{background:var(--brand-600)}
 
-    .panel{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow)}
+    .panel{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:20px;
+      box-shadow:var(--shadow);
+    }
     h1{margin:0; font-size:28px}
     .meta{color:var(--muted); margin-top:6px}
     .section{margin-top:18px}
+    .group{display:flex; gap:10px; flex-wrap:wrap}
+
+    /* Hero restaurant image */
+    .rest-photo-hero{
+      width:100%;
+      max-height:260px;
+      object-fit:cover;
+      border-radius:14px;
+      margin-top:16px;
+      border:1px solid var(--line);
+    }
 
     /* Hours block */
-    #hours .table{border:1px solid var(--line); border-radius:14px; overflow:hidden}
-    #hours .row{display:grid; grid-template-columns:1fr auto auto; gap:10px; padding:12px 14px; background:#fff}
+    #hours .table{
+      border:1px solid var(--line);
+      border-radius:14px;
+      overflow:hidden;
+      background:#fff;
+    }
+    #hours .row{
+      display:grid;
+      grid-template-columns:1fr auto auto;
+      gap:10px;
+      padding:12px 14px;
+    }
     #hours .row:not(:last-child){border-bottom:1px solid var(--line)}
     #hours .day{font-weight:600}
     #hours .time{font-variant-numeric:tabular-nums}
-    .group{display:flex; gap:10px; flex-wrap:wrap}
   </style>
 </head>
 <body>
@@ -42,8 +84,14 @@
     <article class="panel">
       <header>
         <h1>{{ restaurant.name }}</h1>
-        <p class="meta">{{ restaurant.cuisine }} • {{ restaurant.address }} • Seats {{ restaurant.capacity }}</p>
+        <p class="meta">
+          {{ restaurant.cuisine }} • {{ restaurant.address }} • Seats {{ restaurant.capacity }}
+        </p>
       </header>
+
+      {% if restaurant.photo %}
+        <img src="{{ restaurant.photo.url }}" alt="{{ restaurant.name }} photo" class="rest-photo-hero">
+      {% endif %}
 
       {% if restaurant.description %}
         <p class="section">{{ restaurant.description }}</p>
@@ -66,16 +114,24 @@
         {% endif %}
       </div>
 
-     <!-- Opening hours -->
-<section id="hours" class="section" aria-label="Opening hours">
-  <h3 style="margin:0 0 10px 0">Opening hours</h3>
-  <div class="table">
-    {% for day, open_t, close_t in opening_rows %}
-      <div class="row">
-        <div class="day">{{ day }}</div>
-        <div class="time">{% if open_t %}{{ open_t }}{% else %}—{% endif %}</div>
-        <div class="time">– {% if close_t %}{{ close_t }}{% else %}—{% endif %}</div>
-      </div>
-    {% endfor %}
+      <!-- Opening hours -->
+      <section id="hours" class="section" aria-label="Opening hours">
+        <h3 style="margin:0 0 10px 0">Opening hours</h3>
+        <div class="table">
+          {% for day, open_t, close_t in opening_rows %}
+            <div class="row">
+              <div class="day">{{ day }}</div>
+              <div class="time">
+                {% if open_t %}{{ open_t }}{% else %}—{% endif %}
+              </div>
+              <div class="time">
+                – {% if close_t %}{{ close_t }}{% else %}—{% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </section>
+    </article>
   </div>
-</section>
+</body>
+</html>

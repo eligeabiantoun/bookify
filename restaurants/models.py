@@ -16,6 +16,11 @@ class Restaurant(models.Model):
     description = models.TextField(blank=True)
     opening_hours = models.JSONField(blank=True, default=dict)
     # Keep rating as stored value; validate 0..5 (one decimal place allowed)
+    photo = models.ImageField(
+        upload_to="restaurant_photos/",
+        blank=True,
+        null=True
+    )
     rating = models.DecimalField(
         max_digits=3,
         decimal_places=1,

@@ -57,21 +57,29 @@
       flex:0 0 72px;height:72px;border-radius:12px;background:var(--brand-50);
       display:grid;place-items:center;font-weight:800;color:var(--brand);font-size:18px;border:1px solid #ffe2c8;
       align-self:center;
+      overflow:hidden;
+    }
+    .thumb-img{
+      width:100%;
+      height:100%;
+      border-radius:inherit;
+      object-fit:cover;
+      border:none;
+      display:block;
     }
 
     .info{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  min-width:0;
-}
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      min-width:0;
+    }
     .name{
       font-size:17px;font-weight:800;margin:0 0 6px 0;line-height:1.2;
       white-space:normal; overflow-wrap:anywhere;
     }
 
-    /* NEW: rating row sits under the name */
     .rating-row{
       display:flex;
       gap:4px;
@@ -91,12 +99,12 @@
     .dot::before{content:"•";color:#c0c3c7}
 
     .actions{
-  flex:0 0 140px;
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-  margin-top:12px;   /* <<< add this */
-}
+      flex:0 0 140px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      margin-top:12px;
+    }
     .spacer{flex:1}
     .badge{
       align-self:stretch;height:24px;display:grid;place-items:center;
@@ -115,91 +123,94 @@
       position:absolute;inset:0;width:50%;overflow:hidden
     }
     .rating small{margin-left:4px;opacity:.75}
-</style>
+  </style>
 
 </head>
 <body>
   <div class="wrap">
-<header>
-  <h1 class="title">Browse Restaurants</h1>
-  <div class="bar">
-    <a href="{% url 'home' %}" class="btn ghost">← Home</a>
+    <header>
+      <h1 class="title">Browse Restaurants</h1>
+      <div class="bar">
+        <a href="{% url 'home' %}" class="btn ghost">← Home</a>
 
-    {% if request.user.is_authenticated %}
-      {% if request.user.role == 'OWNER' %}
-        <a href="{% url 'owner_dashboard' %}" class="btn">Your profile</a>
-      {% elif request.user.role == 'STAFF' %}
-        <a href="{% url 'staff_dashboard' %}" class="btn">Staff dashboard</a>
-      {% else %}
-        <a href="{% url 'customer_dashboard' %}" class="btn">My reservations</a>
-      {% endif %}
+        {% if request.user.is_authenticated %}
+          {% if request.user.role == 'OWNER' %}
+            <a href="{% url 'owner_dashboard' %}" class="btn">Your profile</a>
+          {% elif request.user.role == 'STAFF' %}
+            <a href="{% url 'staff_dashboard' %}" class="btn">Staff dashboard</a>
+          {% else %}
+            <a href="{% url 'customer_dashboard' %}" class="btn">My reservations</a>
+          {% endif %}
 
-      <form method="post" action="{% url 'logout' %}" style="display:inline;">
-        {% csrf_token %}
-        <button type="submit" class="btn ghost">Log out</button>
-      </form>
-    {% else %}
-      <a href="{% url 'login' %}" class="btn">Log in</a>
-      <a href="{% url 'signup' %}" class="btn">Sign Up</a>
-    {% endif %}
-  </div>
-</header>
-
-
-  <div class="panel" role="region" aria-label="Filters">
-    <form class="filters" method="get">
-      <label class="sr" for="q">Search</label>
-      <input id="q" type="text" name="q" placeholder="Search by name or address…" value="{{ q|default:'' }}">
-      <label class="sr" for="cuisine">Cuisine</label>
-      <input id="cuisine" type="text" name="cuisine" placeholder="Cuisine (e.g., Italian, Sushi…)" value="{{ cuisine|default:'' }}">
-      <button class="btn brand" type="submit">Search</button>
-  
-      <!-- 🔽 MOVE THE CHIPS HERE, INSIDE THE FORM -->
-      <div class="chips" aria-label="Quick categories" style="grid-column: 1 / -1; margin-top:10px;">
-        <button type="submit" name="cuisine" value="Lebanese" class="chip">Lebanese</button>
-        <button type="submit" name="cuisine" value="Burger"   class="chip">Burger</button>
-        <button type="submit" name="cuisine" value="Sushi"    class="chip">Sushi</button>
-        <button type="submit" name="cuisine" value="Pizza"    class="chip">Pizza</button>
-        <button type="submit" name="cuisine" value="Cafe"     class="chip">Cafe</button>
+          <form method="post" action="{% url 'logout' %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn ghost">Log out</button>
+          </form>
+        {% else %}
+          <a href="{% url 'login' %}" class="btn">Log in</a>
+          <a href="{% url 'signup' %}" class="btn">Sign Up</a>
+        {% endif %}
       </div>
-    </form>
-  </div>
+    </header>
+
+
+    <div class="panel" role="region" aria-label="Filters">
+      <form class="filters" method="get">
+        <label class="sr" for="q">Search</label>
+        <input id="q" type="text" name="q" placeholder="Search by name or address…" value="{{ q|default:'' }}">
+        <label class="sr" for="cuisine">Cuisine</label>
+        <input id="cuisine" type="text" name="cuisine" placeholder="Cuisine (e.g., Italian, Sushi…)" value="{{ cuisine|default:'' }}">
+        <button class="btn brand" type="submit">Search</button>
+
+        <div class="chips" aria-label="Quick categories" style="grid-column: 1 / -1; margin-top:10px;">
+          <button type="submit" name="cuisine" value="Lebanese" class="chip">Lebanese</button>
+          <button type="submit" name="cuisine" value="Burger"   class="chip">Burger</button>
+          <button type="submit" name="cuisine" value="Sushi"    class="chip">Sushi</button>
+          <button type="submit" name="cuisine" value="Pizza"    class="chip">Pizza</button>
+          <button type="submit" name="cuisine" value="Cafe"     class="chip">Cafe</button>
+        </div>
+      </form>
+    </div>
 
     <section class="grid" aria-label="Restaurant results">
       {% for r in restaurants %}
         <article class="card">
-          <div class="thumb" aria-hidden="true">{{ r.name|slice:":1" }}</div>
+          {% if r.photo %}
+            <div class="thumb" aria-hidden="true">
+              <img src="{{ r.photo.url }}" alt="{{ r.name }} photo" class="thumb-img">
+            </div>
+          {% else %}
+            <div class="thumb" aria-hidden="true">{{ r.name|slice:":1" }}</div>
+          {% endif %}
 
           <div class="info">
-  <h3 class="name">{{ r.name }}</h3>
+            <h3 class="name">{{ r.name }}</h3>
 
-  <div class="rating-row" aria-label="{{ r.rating|default:0|floatformat:1 }} out of 5">
-  {% with rr=r.rating|default:0|floatformat:1 %}
-    {% for _ in "12345" %}
-      {% with i=forloop.counter %}
-        {% if rr|floatformat:1 >= i %}
-          <span class="star star-full" aria-hidden="true">★</span>
-        {% elif rr|floatformat:1 >= i|add:"-0.5" %}
-          <span class="star star-half" aria-hidden="true">★</span>
-        {% else %}
-          <span class="star star-empty" aria-hidden="true">☆</span>
-        {% endif %}
-      {% endwith %}
-    {% endfor %}
-    <small>({{ rr }})</small>
-  {% endwith %}
-</div>
+            <div class="rating-row" aria-label="{{ r.rating|default:0|floatformat:1 }} out of 5">
+              {% with rr=r.rating|default:0|floatformat:1 %}
+                {% for _ in "12345" %}
+                  {% with i=forloop.counter %}
+                    {% if rr|floatformat:1 >= i %}
+                      <span class="star star-full" aria-hidden="true">★</span>
+                    {% elif rr|floatformat:1 >= i|add:"-0.5" %}
+                      <span class="star star-half" aria-hidden="true">★</span>
+                    {% else %}
+                      <span class="star star-empty" aria-hidden="true">☆</span>
+                    {% endif %}
+                  {% endwith %}
+                {% endfor %}
+                <small>({{ rr }})</small>
+              {% endwith %}
+            </div>
 
-
-  <div class="meta">
-    <div class="meta-row">
-      <span>{{ r.cuisine }}</span><span class="dot"></span><span>{{ r.address }}</span>
-    </div>
-  </div>
-</div>
+            <div class="meta">
+              <div class="meta-row">
+                <span>{{ r.cuisine }}</span><span class="dot"></span><span>{{ r.address }}</span>
+              </div>
+            </div>
+          </div>
 
           <div class="actions">
-            {# Role-aware primary button #}
             {% if request.user.is_authenticated %}
               {% if request.user.role == 'CUSTOMER' %}
                 <a class="btn brand full" href="{% url 'customer_dashboard' %}">Book now</a>

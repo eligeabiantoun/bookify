@@ -60,6 +60,15 @@
       white-space:nowrap;
     }
     .cancel-btn:hover { text-decoration:underline; }
+
+    /* thumbnail image for restaurants */
+    .thumb-img{
+      width:100%;
+      height:100%;
+      border-radius:inherit;
+      object-fit:cover;
+      display:block;
+    }
   </style>
 </head>
 
@@ -105,7 +114,13 @@
             <article class="card {% if active_restaurant_id == r.id %}active{% endif %}">
               <!-- Card header -->
               <div class="card-head">
-                <div class="thumb">{{ r.name|slice:":1" }}</div>
+                {% if r.photo %}
+                  <div class="thumb" aria-hidden="true">
+                    <img src="{{ r.photo.url }}" alt="{{ r.name }} photo" class="thumb-img">
+                  </div>
+                {% else %}
+                  <div class="thumb" aria-hidden="true">{{ r.name|slice:":1" }}</div>
+                {% endif %}
                 <div class="info">
                   <h3 class="name">{{ r.name }}</h3>
                   <div class="meta">
@@ -275,3 +290,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
