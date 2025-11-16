@@ -334,34 +334,35 @@
           <a href="{% url 'owner_restaurant_create' %}" class="btn primary">Create restaurant</a>
         {% else %}
 
-          <!-- PENDING -->
-          <div class="section-title">Pending reservations</div>
-          {% if pending_reservations %}
-            <ul class="list">
-              {% for r in pending_reservations %}
-                <li>
-                  <div>
-                    <strong>{{ r.guest_name }}</strong><br>
-                    {{ r.datetime|date:"Y-m-d" }} — {{ r.datetime|time:"H:i" }}<br>
-                    <span class="ghost small">{{ r.guest_email }}</span><br>
-                    <span class="ghost small">{{ r.restaurant_name }}</span>
-                  </div>
-                  <div style="display:flex; gap:8px;">
-                    <form action="{% url 'owner_confirm_reservation' r.instance.id %}" method="post">
-                      {% csrf_token %}
-                      <button class="btn primary btn-pill" type="submit">Confirm</button>
-                    </form>
-                    <form action="{% url 'owner_decline_reservation' r.instance.id %}" method="post">
-                      {% csrf_token %}
-                      <button class="btn btn-pill" type="submit">Decline</button>
-                    </form>
-                  </div>
-                </li>
-              {% endfor %}
-            </ul>
-          {% else %}
-            <p class="ghost">No pending reservations.</p>
-          {% endif %}
+<!-- PENDING -->
+<div class="section-title">Pending reservations</div>
+{% if pending_reservations %}
+  <ul class="list">
+    {% for r in pending_reservations %}
+      <li>
+        <div>
+          <strong>{{ r.guest_name }}</strong><br>
+          {{ r.datetime|date:"Y-m-d" }} — {{ r.datetime|time:"H:i" }} · {{ r.party_size }} guests<br>
+          <span class="ghost small">{{ r.guest_email }}</span><br>
+          <span class="ghost small">{{ r.restaurant_name }}</span>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <form action="{% url 'owner_confirm_reservation' r.instance.id %}" method="post">
+            {% csrf_token %}
+            <button class="btn primary btn-pill" type="submit">Confirm</button>
+          </form>
+          <form action="{% url 'owner_decline_reservation' r.instance.id %}" method="post">
+            {% csrf_token %}
+            <button class="btn btn-pill" type="submit">Decline</button>
+          </form>
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p class="ghost">No pending reservations.</p>
+{% endif %}
+
 
           <!-- UPCOMING -->
           <div class="section-title" style="margin-top:18px;">Upcoming bookings</div>
