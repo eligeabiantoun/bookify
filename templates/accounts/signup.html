@@ -106,9 +106,6 @@
             <select name="role" id="id_role" class="form-select" required>
               <option value="CUSTOMER" selected>Customer</option>
               <option value="OWNER">Owner</option>
-              <option value="STAFF" data-invite-only="1" disabled>Customer Service (Staff) — invite-only</option>
-              <option value="ADMIN" data-invite-only="1" disabled>Admin — invite-only</option>
-              <option value="SUPPORT" data-invite-only="1" disabled>Support — invite-only</option>
             </select>
           {% endif %}
 
@@ -117,10 +114,7 @@
           {% endif %}
         </div>
 
-        <!-- Informational note -->
-        <p id="roleNote" class="small text-white-50 mb-4">
-          Staff/Admin/Support accounts are invite-only. Selecting one will disable the button.
-        </p>
+
 
         <!-- Primary CTA -->
         <button type="submit" id="createBtn" class="btn btn-primary w-100 auth-cta">Create Account</button>
