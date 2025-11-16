@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 class Restaurant(models.Model):
@@ -14,7 +15,14 @@ class Restaurant(models.Model):
     capacity = models.PositiveIntegerField()
     description = models.TextField(blank=True)
     opening_hours = models.JSONField(blank=True, default=dict)
-    rating = models.DecimalField(max_digits=3, decimal_places=1, default=0)
+    # Keep rating as stored value; validate 0..5 (one decimal place allowed)
+    rating = models.DecimalField(
+        max_digits=3,
+        decimal_places=1,
+        default=0,
+        validators=[MinValueValidator(0), MaxValueValidator(5)],
+        help_text="Average rating shown to users (0.0–5.0).",
+    )
 
     def __str__(self):
         return self.name
