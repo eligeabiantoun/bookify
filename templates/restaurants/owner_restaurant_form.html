@@ -8,98 +8,304 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
     :root{
-      --bg:#0f172a;           /* slate-900 */
-      --panel:#111827;        /* gray-900 */
-      --muted:#94a3b8;        /* slate-400 */
-      --text:#e5e7eb;         /* gray-200 */
-      --primary:#2563eb;      /* blue-600 */
-      --primary-2:#1d4ed8;    /* blue-700 */
-      --border:#1f2937;       /* gray-800 */
-      --ok:#22c55e;           /* green-500 */
-      --danger:#ef4444;       /* red-500 */
+      /* Light Bookify palette */
+      --bg:#f7f7f8;           /* page background */
+      --panel:#ffffff;        /* cards / panels */
+      --muted:#6b7280;        /* muted text */
+      --text:#111827;         /* main text */
+      --primary:#ff7a1a;      /* orange */
+      --primary-2:#ff6a00;    /* darker orange */
+      --border:#e5e7eb;       /* light border */
+      --ok:#16a34a;           /* green */
+      --danger:#ef4444;       /* red */
     }
-    *{box-sizing:border-box}
-    body{
-      margin:0; font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      color:var(--text);
-      background: radial-gradient(1200px 700px at 20% -20%, #1f2937 0, transparent 60%), var(--bg);
-      min-height:100vh; display:grid; place-items:center; padding:24px;
-    }
-    .wrap{ width:100%; max-width:960px; }
-    .card{
-      background:rgba(17,24,39,.8); border:1px solid var(--border); border-radius:18px;
-      box-shadow:0 20px 60px rgba(0,0,0,.35); overflow:hidden;
-    }
-    .head{
-      padding:20px 22px; border-bottom:1px solid var(--border);
-      display:flex; justify-content:space-between; align-items:center; gap:12px;
-    }
-    .title{ font-size:24px; margin:0; letter-spacing:.2px }
-    .sub{ color:var(--muted); font-size:13px; margin-top:4px }
-    .actions{ display:flex; gap:10px; flex-wrap:wrap }
-    .btn{
-      display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border-radius:12px;
-      border:1px solid var(--border); background:#0b1220; color:var(--text); text-decoration:none; font-weight:600;
-    }
-    .btn:hover{ background:#0c1426; border-color:#273244 }
-    .btn.primary{ background:var(--primary); border-color:transparent; color:#fff }
-    .btn.primary:hover{ background:var(--primary-2) }
-    .btn.ghost{ background:transparent }
 
-    form{ padding:22px; display:grid; grid-template-columns:1fr; gap:16px }
+    *{box-sizing:border-box}
+
+    body{
+      margin:0;
+      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--text);
+      background:var(--bg);
+      min-height:100vh;
+      display:grid;
+      place-items:center;
+      padding:24px;
+    }
+
+    .wrap{ width:100%; max-width:960px; }
+
+    .card{
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:18px;
+      box-shadow:0 18px 46px rgba(15,23,42,.12);
+      overflow:hidden;
+    }
+
+    .head{
+      padding:20px 22px;
+      border-bottom:1px solid var(--border);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      background:#ffffff;
+    }
+
+    .title{
+      font-size:24px;
+      margin:0;
+      letter-spacing:.2px;
+    }
+
+    .sub{
+      color:var(--muted);
+      font-size:13px;
+      margin-top:4px;
+    }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 14px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background:#ffffff;
+      color:var(--text);
+      text-decoration:none;
+      font-weight:600;
+      transition:background .15s ease, border-color .15s ease, box-shadow .15s ease;
+      cursor:pointer;
+    }
+
+    .btn:hover{
+      background:#f9fafb;
+      border-color:#d1d5db;
+      box-shadow:0 2px 6px rgba(15,23,42,.08);
+    }
+
+    .btn.primary{
+      background:var(--primary);
+      border-color:var(--primary);
+      color:#ffffff;
+    }
+
+    .btn.primary:hover{
+      background:var(--primary-2);
+      border-color:var(--primary-2);
+      box-shadow:0 4px 10px rgba(248,113,22,.35);
+    }
+
+    .btn.ghost{
+      background:transparent;
+    }
+
+    form{
+      padding:22px;
+      display:grid;
+      grid-template-columns:1fr;
+      gap:16px;
+      background:#ffffff;
+    }
+
     .grid{ display:grid; gap:14px }
+
     @media (min-width: 900px){
       .grid.two{ grid-template-columns:1fr 1fr }
     }
-    label{ display:block; font-weight:600; margin:0 0 6px 2px }
-    input[type="text"], input[type="number"], textarea{
-      width:100%; padding:12px 12px; border-radius:12px; border:1px solid var(--border);
-      background:#0b1220; color:var(--text); outline:none;
+
+    label{
+      display:block;
+      font-weight:600;
+      margin:0 0 6px 2px;
     }
-    input:focus, textarea:focus{ border-color:#2b3a55 }
-    textarea{ min-height:120px; resize:vertical }
-    .help{ color:var(--muted); font-size:12px; margin-top:6px }
-    .field-error{ color:var(--danger); font-size:12px; margin-top:6px }
-    .row{ display:flex; gap:10px; flex-wrap:wrap }
+
+    input[type="text"],
+    input[type="number"],
+    textarea{
+      width:100%;
+      padding:12px 12px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background:#ffffff;
+      color:var(--text);
+      outline:none;
+      font-size:14px;
+    }
+
+    input:focus,
+    textarea:focus{
+      border-color:var(--primary);
+      box-shadow:0 0 0 1px rgba(249,115,22,.15);
+    }
+
+    textarea{
+      min-height:120px;
+      resize:vertical;
+    }
+
+    .help{
+      color:var(--muted);
+      font-size:12px;
+      margin-top:6px;
+    }
+
+    .field-error{
+      color:var(--danger);
+      font-size:12px;
+      margin-top:6px;
+    }
+
+    .row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
     .footer{
-      display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:6px;
-      padding:20px 22px; border-top:1px solid var(--border); background:rgba(11,18,32,.7);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-top:6px;
+      padding:20px 22px;
+      border-top:1px solid var(--border);
+      background:#f9fafb;
     }
-    .msg{ color:var(--muted); font-size:12px }
+
+    .msg{
+      color:var(--muted);
+      font-size:12px;
+    }
+
     .badge{
-      display:inline-block; padding:6px 10px; border-radius:999px; font-size:12px;
-      background:#0b1220; border:1px solid var(--border); color:var(--muted);
-      cursor:pointer; user-select:none; transition:all .15s ease;
+      display:inline-block;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:12px;
+      background:#ffffff;
+      border:1px solid var(--border);
+      color:var(--muted);
+      cursor:pointer;
+      user-select:none;
+      transition:all .15s ease;
     }
-    .badge:hover{ color:#fff; border-color:#2b3a55 }
-    .opening-section{ display:grid; gap:12px }
-    .hours-grid{ display:grid; gap:12px; margin-top:12px }
+
+    .badge:hover{
+      color:var(--primary-2);
+      border-color:var(--primary);
+      background:#fff7ed;
+    }
+
+    .opening-section{
+      display:grid;
+      gap:12px;
+    }
+
+    .hours-grid{
+      display:grid;
+      gap:12px;
+      margin-top:12px;
+    }
+
     @media (min-width: 700px){
       .hours-grid{ grid-template-columns:repeat(2, minmax(0, 1fr)) }
     }
     @media (min-width: 1100px){
       .hours-grid{ grid-template-columns:repeat(3, minmax(0, 1fr)) }
     }
+
     .day-block{
-      background:#0b1220; border:1px solid var(--border); border-radius:14px;
-      padding:14px 16px; display:grid; gap:12px; transition:all .2s ease;
+      background:#f9fafb;
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:14px 16px;
+      display:grid;
+      gap:12px;
+      transition:all .2s ease;
     }
-    .day-block.closed{ opacity:.55 }
-    .day-row{ display:flex; justify-content:space-between; align-items:center; gap:12px }
-    .day-name{ font-weight:600; font-size:15px; letter-spacing:.3px }
-    .state-switch{ display:flex; gap:8px; flex-wrap:wrap }
+
+    .day-block.closed{
+      opacity:.55;
+    }
+
+    .day-row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+    }
+
+    .day-name{
+      font-weight:600;
+      font-size:15px;
+      letter-spacing:.3px;
+    }
+
+    .state-switch{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
     .state-btn{
-      padding:8px 14px; border-radius:999px; background:#111927; border:1px solid var(--border);
-      color:var(--muted); font-weight:600; cursor:pointer; transition:all .15s ease;
+      padding:8px 14px;
+      border-radius:999px;
+      background:#ffffff;
+      border:1px solid var(--border);
+      color:var(--muted);
+      font-weight:600;
+      cursor:pointer;
+      transition:all .15s ease;
+      font-size:13px;
     }
-    .state-btn.active{ background:var(--primary); color:#fff; border-color:transparent }
-    .time-row{ display:flex; gap:10px; flex-wrap:wrap }
-    .time-row label{ display:flex; flex-direction:column; gap:4px; font-size:13px; color:var(--muted) }
+
+    .state-btn.active{
+      background:var(--primary);
+      color:#ffffff;
+      border-color:var(--primary);
+    }
+
+    .time-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .time-row label{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      font-size:13px;
+      color:var(--muted);
+    }
+
     .time-row input[type="time"]{
-      padding:10px 12px; border-radius:10px; border:1px solid var(--border);
-      background:#0f1729; color:var(--text); min-width:140px;
+      padding:10px 12px;
+      border-radius:10px;
+      border:1px solid var(--border);
+      background:#ffffff;
+      color:var(--text);
+      min-width:140px;
+      font-size:14px;
     }
-    .quick-actions{ justify-content:flex-start }
+
+    .time-row input[type="time"]:focus{
+      border-color:var(--primary);
+      box-shadow:0 0 0 1px rgba(249,115,22,.12);
+    }
+
+    .quick-actions{
+      justify-content:flex-start;
+    }
   </style>
 </head>
 <body>
@@ -108,10 +314,9 @@
       <div class="head">
         <div>
           <h1 class="title">{% if mode == 'edit' %}Edit{% else %}Create{% endif %} Your Restaurant</h1>
-        <div class="sub">Fill in your details below. You can update these anytime.</div>
+          <div class="sub">Fill in your details below. You can update these anytime.</div>
         </div>
         <div class="actions">
-          <!-- corrected url name -->
           <a class="btn" href="{% url 'owner_dashboard' %}">&larr; Back to Dashboard</a>
         </div>
       </div>
@@ -156,7 +361,10 @@
           <label for="{{ form.opening_hours.id_for_label }}">Opening hours</label>
           <div class="help">Toggle which days you are open, then choose opening and closing times.</div>
           {{ form.opening_hours }}
+
           <div class="hours-grid" id="opening-hours-grid">
+            <!-- day blocks unchanged (Mon–Sun) -->
+            <!-- Mon -->
             <div class="day-block" data-day="Mon">
               <div class="day-row">
                 <span class="day-name">Mon</span>
@@ -174,6 +382,7 @@
                 </label>
               </div>
             </div>
+            <!-- Tue -->
             <div class="day-block" data-day="Tue">
               <div class="day-row">
                 <span class="day-name">Tue</span>
@@ -191,6 +400,7 @@
                 </label>
               </div>
             </div>
+            <!-- Wed -->
             <div class="day-block" data-day="Wed">
               <div class="day-row">
                 <span class="day-name">Wed</span>
@@ -208,6 +418,7 @@
                 </label>
               </div>
             </div>
+            <!-- Thu -->
             <div class="day-block" data-day="Thu">
               <div class="day-row">
                 <span class="day-name">Thu</span>
@@ -225,6 +436,8 @@
                 </label>
               </div>
             </div>
+            <!-- Fri -->
+                       <!-- Fri -->
             <div class="day-block" data-day="Fri">
               <div class="day-row">
                 <span class="day-name">Fri</span>
@@ -242,6 +455,8 @@
                 </label>
               </div>
             </div>
+
+            <!-- Sat -->
             <div class="day-block" data-day="Sat">
               <div class="day-row">
                 <span class="day-name">Sat</span>
@@ -259,6 +474,8 @@
                 </label>
               </div>
             </div>
+
+            <!-- Sun -->
             <div class="day-block" data-day="Sun">
               <div class="day-row">
                 <span class="day-name">Sun</span>
@@ -277,11 +494,15 @@
               </div>
             </div>
           </div>
+
           <div class="row quick-actions">
             <span class="badge" data-preset="copy-mon">Copy Monday to all</span>
             <span class="badge" id="clear-opening-hours">Clear all</span>
           </div>
-          {% for e in form.opening_hours.errors %}<div class="field-error">{{ e }}</div>{% endfor %}
+
+          {% for e in form.opening_hours.errors %}
+            <div class="field-error">{{ e }}</div>
+          {% endfor %}
         </div>
 
         <div class="footer">
@@ -293,7 +514,6 @@
             {% endif %}
           </div>
           <div class="row">
-            <!-- corrected url name -->
             <a class="btn ghost" href="{% url 'owner_dashboard' %}">Cancel</a>
             <button class="btn primary" type="submit">
               {% if mode == 'edit' %}Save changes{% else %}Create{% endif %}
@@ -424,3 +644,4 @@
   </script>
 </body>
 </html>
+
