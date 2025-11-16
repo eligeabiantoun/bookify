@@ -60,8 +60,9 @@ urlpatterns = [
     path(
         "dashboard/customer/reservations/<int:pk>/cancel/",
         a.cancel_reservation,
-        name="customer_cancel_reservation",
-    ),
+        name="cancel_reservation",
+        ),
+
     path("dashboard/owner/", a.owner_dashboard, name="owner_dashboard"),
     path("dashboard/staff/", a.staff_dashboard, name="staff_dashboard"),
     path("owner/reservations/<int:pk>/confirm/", a.owner_confirm_reservation, name="owner_confirm_reservation"),

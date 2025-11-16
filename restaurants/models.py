@@ -25,6 +25,7 @@ class Reservation(models.Model):
         PENDING = "PENDING", "Pending"
         CONFIRMED = "CONFIRMED", "Confirmed"
         CANCELLED = "CANCELLED", "Cancelled"
+        DECLINED = "DECLINED", "Declined"
 
     restaurant = models.ForeignKey(
         Restaurant,

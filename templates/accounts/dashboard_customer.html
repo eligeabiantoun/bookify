@@ -6,258 +6,272 @@
   <title>Customer Dashboard • Bookify</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- Light theme to match browse page -->
+  <!-- Theme -->
   <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 
-  <!-- Flatpickr (calendar & time) -->
+  <!-- Flatpickr -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
-  <!-- Small badge styling to match white + orange theme -->
+  <!-- Inline styling for badges + cancel -->
   <style>
     .badge {
-      display: inline-flex;
-      align-items: center;
-      padding: 2px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 500;
-      margin-left: 8px;
+      display:inline-flex;
+      align-items:center;
+      padding:2px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:500;
+      margin-left:8px;
     }
     .badge--pending {
-      background: #fff7ed;        /* very light orange */
-      color: #ea580c;             /* orange text */
-      border: 1px solid #fed7aa;  /* soft orange border */
+      background:#fff7ed;
+      color:#ea580c;
+      border:1px solid #fed7aa;
     }
     .badge--confirmed {
-      background: #dcfce7;        /* light green */
-      color: #15803d;             /* green text */
-      border: 1px solid #bbf7d0;
+      background:#dcfce7;
+      color:#15803d;
+      border:1px solid #bbf7d0;
     }
     .badge--cancelled {
-      background: #fee2e2;        /* light red */
-      color: #b91c1c;
-      border: 1px solid #fecaca;
+      background:#fee2e2;
+      color:#b91c1c;
+      border:1px solid #fecaca;
     }
+
+    .list--reservations li {
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+    }
+    .res-main {
+      flex:1;
+      min-width:0;
+    }
+    .cancel-btn {
+      border:none;
+      background:transparent;
+      color:#dc2626;
+      font-size:13px;
+      cursor:pointer;
+      padding:2px 4px;
+      white-space:nowrap;
+    }
+    .cancel-btn:hover { text-decoration:underline; }
   </style>
 </head>
+
 <body>
-  <div class="wrap">
-    <!-- TOP BAR -->
-    <header class="topbar">
-      <div class="hello">
-        <div class="avatar">{{ request.user.first_name|default:request.user.email|slice:":1" }}</div>
-        <div>
-          <h1 class="title">Welcome back, {{ request.user.first_name|default:request.user.email }}</h1>
-          <p class="muted">Discover restaurants and request a table in seconds.</p>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <header class="topbar">
+    <div class="hello">
+      <div class="avatar">{{ request.user.first_name|default:request.user.email|slice:":1" }}</div>
+      <div>
+        <h1 class="title">Welcome back, {{ request.user.first_name|default:request.user.email }}</h1>
+        <p class="muted">Discover restaurants and request a table in seconds.</p>
+      </div>
+    </div>
+    <div class="actions">
+      <a href="{% url 'home' %}" class="btn ghost">← Back home</a>
+      <a href="{% url 'logout' %}" class="btn">Log out</a>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT GRID -->
+  <main class="grid">
+
+    <!-- LEFT SIDE: BROWSE RESTAURANTS -->
+    <section>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Browse restaurants</h2>
+          <form method="get" class="searchbar">
+            <input type="text" name="q" value="{{ search_query }}" placeholder='Try "Italian" or "Downtown"'>
+            <button class="btn brand" type="submit">Search</button>
+          </form>
         </div>
-      </div>
-      <div class="actions">
-        <a href="{% url 'home' %}" class="btn ghost">← Back home</a>
-        <a href="{% url 'logout' %}" class="btn">Log out</a>
-      </div>
-    </header>
 
-    <!-- LAYOUT -->
-    <main class="grid">
-      <!-- LEFT: BROWSE + REQUEST -->
-      <section>
-        <div class="panel">
-          <div class="panel-head">
-            <h2>Browse restaurants</h2>
-            <form method="get" class="searchbar">
-              <input type="text" name="q" value="{{ search_query }}" placeholder='Try "Italian" or "Downtown"'>
-              <button class="btn brand" type="submit">Search</button>
-            </form>
-          </div>
+        {% if not has_restaurants %}
+          <div class="empty">No restaurants available yet.</div>
+        {% endif %}
 
-          {% if not has_restaurants %}
-            <div class="empty">No restaurants available yet.</div>
-          {% endif %}
-
-          <div class="cards">
-            {% for item in restaurants %}
-              {% with r=item.obj form=item.form hours=item.opening_hours %}
-              <article class="card {% if active_restaurant_id == r.id %}active{% endif %}">
-                <!-- Card header -->
-                <div class="card-head">
-                  <div class="thumb">{{ r.name|slice:":1" }}</div>
-                  <div class="info">
-                    <h3 class="name">{{ r.name }}</h3>
-                    <div class="meta">
-                      <span>{{ r.cuisine }}</span><span class="dot"></span>
-                      <span>{{ r.address }}</span>
-                    </div>
+        <div class="cards">
+          {% for item in restaurants %}
+            {% with r=item.obj form=item.form hours=item.opening_hours %}
+            <article class="card {% if active_restaurant_id == r.id %}active{% endif %}">
+              <!-- Card header -->
+              <div class="card-head">
+                <div class="thumb">{{ r.name|slice:":1" }}</div>
+                <div class="info">
+                  <h3 class="name">{{ r.name }}</h3>
+                  <div class="meta">
+                    <span>{{ r.cuisine }}</span><span class="dot"></span>
+                    <span>{{ r.address }}</span>
                   </div>
-                  <div class="city">{{ r.city|default:"" }}</div>
+                </div>
+                <div class="city">{{ r.city|default:"" }}</div>
+              </div>
+
+              {% if r.description %}
+                <p class="desc">{{ r.description }}</p>
+              {% endif %}
+
+              {% if hours %}
+                <div class="hours-table">
+                  {% for day, range in hours %}
+                    <div class="row">
+                      <span class="day">{{ day }}</span>
+                      <span class="range">{{ range }}</span>
+                    </div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+
+              <!-- Reservation Form -->
+              <form method="post" class="req-form" data-restaurant="{{ r.id }}">
+                {% csrf_token %}
+                {{ form.restaurant }}
+
+                {% if form.non_field_errors %}
+                  <div class="form-errors">{{ form.non_field_errors }}</div>
+                {% endif %}
+
+                <div class="row3">
+                  <div class="field">
+                    <label>Date</label>
+                    {{ form.reservation_date }}
+                  </div>
+                  <div class="field">
+                    <label>Time</label>
+                    {{ form.reservation_time }}
+                  </div>
+                  <div class="field">
+                    <label>Guests</label>
+                    {{ form.party_size }}
+                  </div>
                 </div>
 
-                {% if r.description %}
-                  <p class="desc">{{ r.description }}</p>
-                {% endif %}
+                <div class="field">
+                  <label>Notes (optional)</label>
+                  {{ form.notes }}
+                </div>
 
-                {% if r.opening_time and r.closing_time %}
-                  <div class="hours-row">
-                    <span class="label">Daily</span>
-                    <span class="time">{{ r.opening_time|time:"H:i" }} – {{ r.closing_time|time:"H:i" }}</span>
-                  </div>
-                {% elif hours %}
-                  <div class="hours-table">
-                    {% for day, range in hours %}
-                      <div class="row">
-                        <span class="day">{{ day }}</span>
-                        <span class="range">{{ range }}</span>
-                      </div>
-                    {% endfor %}
-                  </div>
-                {% endif %}
+                <div class="row-end">
+                  <button class="btn brand" type="submit">Request table</button>
+                </div>
+              </form>
+            </article>
+            {% endwith %}
+          {% endfor %}
+        </div>
+      </div>
+    </section>
 
-                <!-- Reservation form -->
-                <form method="post" class="req-form" data-restaurant="{{ r.id }}">
-                  {% csrf_token %}
-                  {{ form.restaurant }} {# hidden field #}
+    <!-- RIGHT SIDE: UPCOMING + PAST -->
+    <aside>
 
-                  {% if form.non_field_errors %}
-                    <div class="form-errors">{{ form.non_field_errors }}</div>
+      <!-- UPCOMING -->
+      <div class="panel">
+        <h2>Upcoming reservations</h2>
+
+        {% if upcoming_reservations %}
+          <ul class="list list--reservations">
+            {% for r in upcoming_reservations %}
+              {% with inst=r.instance %}
+              <li>
+                <div class="res-main">
+                  <strong>{{ inst.restaurant.name }}</strong><br>
+                  {{ inst.reservation_date }} • {{ inst.reservation_time|time:"H:i" }} • {{ inst.party_size }} Guests
+
+                  {% if inst.status == 'PENDING' %}
+                    <span class="badge badge--pending">Pending</span>
+                  {% elif inst.status == 'CONFIRMED' %}
+                    <span class="badge badge--confirmed">Confirmed</span>
+                  {% elif inst.status == 'CANCELLED' %}
+                    <span class="badge badge--cancelled">Cancelled by you</span>
+                  {% elif inst.status == 'DECLINED' %}
+                    <span class="badge badge--cancelled">Declined by restaurant</span>
                   {% endif %}
+                </div>
 
-                  <div class="row3">
-                    <div class="field">
-                      <label for="{{ form.reservation_date.id_for_label }}">Date</label>
-                      {{ form.reservation_date }}
-                      {% if form.reservation_date.errors %}
-                        <div class="form-errors">{{ form.reservation_date.errors }}</div>
-                      {% endif %}
-                    </div>
-
-                    <div class="field">
-                      <label for="{{ form.reservation_time.id_for_label }}">Time</label>
-                      {{ form.reservation_time }}
-                      {% if form.reservation_time.errors %}
-                        <div class="form-errors">{{ form.reservation_time.errors }}</div>
-                      {% endif %}
-                    </div>
-
-                    <div class="field">
-                      <label for="{{ form.party_size.id_for_label }}">Guests</label>
-                      {{ form.party_size }}
-                      {% if form.party_size.errors %}
-                        <div class="form-errors">{{ form.party_size.errors }}</div>
-                      {% endif %}
-                    </div>
-                  </div>
-
-                  <div class="field">
-                    <label for="{{ form.notes.id_for_label }}">Notes (optional)</label>
-                    {{ form.notes }}
-                    {% if form.notes.errors %}
-                      <div class="form-errors">{{ form.notes.errors }}</div>
-                    {% endif %}
-                  </div>
-
-                  <div class="row-end">
-                    <button class="btn brand" type="submit">Request table</button>
-                  </div>
+                {% if inst.status == 'PENDING' or inst.status == 'CONFIRMED' %}
+                <form method="post" action="{% url 'cancel_reservation' inst.id %}"
+                      onsubmit="return confirm('Cancel this reservation?');">
+                  {% csrf_token %}
+                  <button type="submit" class="cancel-btn">Cancel</button>
                 </form>
-              </article>
+                {% endif %}
+              </li>
               {% endwith %}
             {% endfor %}
-          </div>
-        </div>
-      </section>
-
-      <!-- RIGHT: UPCOMING / RECENT -->
-      <aside>
-        <div class="panel">
-          <h2>Upcoming reservations</h2>
-          {% if upcoming_reservations %}
-            <ul class="list">
-              {% for r in upcoming_reservations %}
-                {% with inst=r.instance|default:r %}
-                  <li>
-                    <div>
-                      <strong>{{ inst.restaurant.name }}</strong><br>
-                      {{ inst.reservation_date }} · {{ inst.reservation_time|time:"H:i" }} · {{ inst.party_size }} Guests
-                      {% if inst.status == 'PENDING' %}
-                        <span class="badge badge--pending">{{ inst.get_status_display }}</span>
-                      {% elif inst.status == 'CONFIRMED' %}
-                        <span class="badge badge--confirmed">{{ inst.get_status_display }}</span>
-                      {% elif inst.status == 'CANCELLED' %}
-                        <span class="badge badge--cancelled">{{ inst.get_status_display }}</span>
-                      {% else %}
-                        <span class="badge">{{ inst.get_status_display }}</span>
-                      {% endif %}
-                    </div>
-                  </li>
-                {% endwith %}
-              {% endfor %}
-            </ul>
-          {% else %}
-            <div class="empty">You have no upcoming reservations yet. Pick a restaurant to get started.</div>
-          {% endif %}
-        </div>
-
-        {% if past_reservations %}
-          <div class="panel">
-            <h2>Recent reservations</h2>
-            <ul class="list">
-              {% for r in past_reservations %}
-                {% with inst=r.instance|default:r %}
-                  <li>
-                    <strong>{{ inst.restaurant.name }}</strong>
-                    <div class="muted">
-                      {{ inst.reservation_date }} • {{ inst.reservation_time|time:"H:i" }} • {{ inst.party_size }} Guests
-                      {% if inst.status == 'PENDING' %}
-                        <span class="badge badge--pending">{{ inst.get_status_display }}</span>
-                      {% elif inst.status == 'CONFIRMED' %}
-                        <span class="badge badge--confirmed">{{ inst.get_status_display }}</span>
-                      {% elif inst.status == 'CANCELLED' %}
-                        <span class="badge badge--cancelled">{{ inst.get_status_display }}</span>
-                      {% else %}
-                        <span class="badge">{{ inst.get_status_display }}</span>
-                      {% endif %}
-                    </div>
-                  </li>
-                {% endwith %}
-              {% endfor %}
-            </ul>
-          </div>
+          </ul>
+        {% else %}
+          <div class="empty">You have no upcoming reservations yet. Pick a restaurant to get started.</div>
         {% endif %}
-      </aside>
-    </main>
-  </div>
+      </div>
 
-  <!-- Keep or remove depending on if you created pickers.js -->
-  <script src="{% static 'js/pickers.js' %}"></script>
+      <!-- PAST & CANCELLED -->
+      {% if past_reservations %}
+      <div class="panel">
+        <h2>Past &amp; Cancelled Reservations</h2>
+        <ul class="list">
+          {% for r in past_reservations %}
+            {% with inst=r.instance %}
+            <li>
+              <strong>{{ inst.restaurant.name }}</strong>
+              <div class="muted">
+                {{ inst.reservation_date }} • {{ inst.reservation_time|time:"H:i" }} • {{ inst.party_size }} Guests
 
-  <!-- Inline calendar/time picker initializer -->
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      if (!window.flatpickr) { console.warn('Flatpickr failed to load'); return; }
+                {% if inst.status == 'CANCELLED' %}
+                  <span class="badge badge--cancelled">Cancelled by you</span>
+                {% elif inst.status == 'DECLINED' %}
+                  <span class="badge badge--cancelled">Declined by restaurant</span>
+                {% elif inst.status == 'CONFIRMED' %}
+                  <span class="badge badge--confirmed">Confirmed</span>
+                {% elif inst.status == 'PENDING' %}
+                  <span class="badge badge--pending">Pending</span>
+                {% endif %}
+              </div>
+            </li>
+            {% endwith %}
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
 
-      // Attach date pickers
-      document.querySelectorAll('input.datepicker, input[name="reservation_date"]').forEach(function (el) {
-        try { el.setAttribute('type', 'text'); } catch (e) {}
-        flatpickr(el, {
-          altInput: true,
-          altFormat: "D, M j, Y",
-          dateFormat: "Y-m-d",
-          minDate: "today"
-        });
-      });
+    </aside>
+  </main>
+</div>
 
-      // Attach time pickers
-      document.querySelectorAll('input.timepicker, input[name="reservation_time"]').forEach(function (el) {
-        try { el.setAttribute('type', 'text'); } catch (e) {}
-        flatpickr(el, {
-          enableTime: true,
-          noCalendar: true,
-          dateFormat: "H:i",
-          time_24hr: true,
-          minuteIncrement: 15
-        });
-      });
+<script src="{% static 'js/pickers.js' %}"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  if (!window.flatpickr) return;
+
+  document.querySelectorAll('input[name="reservation_date"]').forEach(el => {
+    flatpickr(el, {
+      altInput:true, altFormat:"D, M j, Y",
+      dateFormat:"Y-m-d",
+      minDate:"today"
     });
-  </script>
+  });
+
+  document.querySelectorAll('input[name="reservation_time"]').forEach(el => {
+    flatpickr(el, {
+      enableTime:true,
+      noCalendar:true,
+      time_24hr:true,
+      dateFormat:"H:i",
+      minuteIncrement:15
+    });
+  });
+});
+</script>
+
 </body>
 </html>
