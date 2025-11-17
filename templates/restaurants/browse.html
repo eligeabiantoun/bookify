@@ -80,6 +80,7 @@
       white-space:normal; overflow-wrap:anywhere;
     }
 
+    /* (old rating-row CSS kept but not used now) */
     .rating-row{
       display:flex;
       gap:4px;
@@ -114,7 +115,7 @@
 
     .sr{position:absolute;left:-9999px}
 
-    /* rating stars */
+    /* star styles (from before) */
     .star{display:inline-block;font-size:14px;line-height:1}
     .star-empty{opacity:.35}
     .star-half{position:relative}
@@ -123,6 +124,30 @@
       position:absolute;inset:0;width:50%;overflow:hidden
     }
     .rating small{margin-left:4px;opacity:.75}
+
+    /* NEW: small rating pill under "More info" */
+    .rating-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:4px;
+      padding:2px 8px;
+      border-radius:999px;
+      background:#ffffff;
+      border:1px solid #e2e8f0;
+      font-size:12px;
+      font-weight:600;
+      white-space:nowrap;
+      align-self:flex-end; /* align with right side under button */
+    }
+    .rating-pill-star{
+      font-size:11px;
+      line-height:1;
+      color:#16a34a;
+    }
+    .rating-pill-value{
+      line-height:1;
+      color:var(--text);
+    }
   </style>
 
 </head>
@@ -184,24 +209,8 @@
           {% endif %}
 
           <div class="info">
+            <!-- SAME AS BEFORE: name + meta only -->
             <h3 class="name">{{ r.name }}</h3>
-
-            <div class="rating-row" aria-label="{{ r.rating|default:0|floatformat:1 }} out of 5">
-              {% with rr=r.rating|default:0|floatformat:1 %}
-                {% for _ in "12345" %}
-                  {% with i=forloop.counter %}
-                    {% if rr|floatformat:1 >= i %}
-                      <span class="star star-full" aria-hidden="true">★</span>
-                    {% elif rr|floatformat:1 >= i|add:"-0.5" %}
-                      <span class="star star-half" aria-hidden="true">★</span>
-                    {% else %}
-                      <span class="star star-empty" aria-hidden="true">☆</span>
-                    {% endif %}
-                  {% endwith %}
-                {% endfor %}
-                <small>({{ rr }})</small>
-              {% endwith %}
-            </div>
 
             <div class="meta">
               <div class="meta-row">
@@ -224,6 +233,14 @@
             {% endif %}
 
             <a class="btn full" href="{% url 'restaurant_detail' r.id %}#hours">More info</a>
+
+            {% with rr=r.rating|default:0|floatformat:1 %}
+              <div class="rating-pill" aria-label="{{ rr }} out of 5">
+                <span class="rating-pill-star">★</span>
+                <span class="rating-pill-value">{{ rr }}</span>
+              </div>
+            {% endwith %}
+
             <div class="spacer"></div>
             <div class="badge">Open {{ r.opening_time|time:"H:i" }} — {{ r.closing_time|time:"H:i" }}</div>
           </div>
