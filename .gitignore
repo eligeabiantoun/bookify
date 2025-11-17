@@ -213,6 +213,5 @@ __pycache__/
 .DS_Store
 .vscode/
 staticfiles/
-media/
 
 config/firebase-service-account.json
