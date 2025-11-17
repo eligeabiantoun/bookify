@@ -5,7 +5,7 @@
       "capacity":80,
       "description":"Upscale classic Lebanese menu and ambiance.",
       "opening_hours":{"daily":{"open":"12:00","close":"23:30"}},
-      "rating":"0.0"
+      "rating":"4.6"
     }},
     {"model":"restaurants.restaurant","pk":4,"fields":{
       "owner": 1,
@@ -13,7 +13,7 @@
       "capacity":90,
       "description":"Armenian specialties with a Lebanese touch.",
       "opening_hours":{"daily":{"open":"12:00","close":"23:30"}},
-      "rating":"0.0"
+      "rating":"4.4"
     }},
     {"model":"restaurants.restaurant","pk":5,"fields":{
       "owner": 1,
@@ -21,7 +21,7 @@
       "capacity":200,
       "description":"Garden vibe, manakish, grills, and backgammon.",
       "opening_hours":{"daily":{"open":"08:00","close":"02:00"}},
-      "rating":"0.0"
+      "rating":"4.5"
     }},
     {"model":"restaurants.restaurant","pk":6,"fields":{
       "owner": 1,
@@ -29,7 +29,7 @@
       "capacity":110,
       "description":"Burgers, salads, and all-day comfort food.",
       "opening_hours":{"daily":{"open":"10:00","close":"01:00"}},
-      "rating":"0.0"
+      "rating":"4.1"
     }},
     {"model":"restaurants.restaurant","pk":7,"fields":{
       "owner": 1,
@@ -37,7 +37,7 @@
       "capacity":70,
       "description":"Manakish, wraps, and late-night bites.",
       "opening_hours":{"daily":{"open":"08:00","close":"01:30"}},
-      "rating":"0.0"
+      "rating":"4.5"
     }},
     {"model":"restaurants.restaurant","pk":8,"fields":{
       "owner": 1,
@@ -45,7 +45,7 @@
       "capacity":60,
       "description":"Local favorite for handcrafted burgers.",
       "opening_hours":{"daily":{"open":"11:00","close":"23:59"}},
-      "rating":"0.0"
+      "rating":"4.1"
     }},
     {"model":"restaurants.restaurant","pk":9,"fields":{
       "owner": 1,
@@ -53,7 +53,7 @@
       "capacity":100,
       "description":"Manti, itch, and grills in a warm setting.",
       "opening_hours":{"daily":{"open":"12:00","close":"23:30"}},
-      "rating":"0.0"
+      "rating":"4.2"
     }},
     {"model":"restaurants.restaurant","pk":10,"fields":{
       "owner": 1,
@@ -61,7 +61,7 @@
       "capacity":120,
       "description":"Modern take on Lebanese mezza and grills.",
       "opening_hours":{"daily":{"open":"12:00","close":"00:30"}},
-      "rating":"0.0"
+      "rating":"4.5"
     }},
     {"model":"restaurants.restaurant","pk":11,"fields":{
       "owner": 1,
@@ -69,7 +69,7 @@
       "capacity":90,
       "description":"Shawarma, manakish, and snacks—Beirut classic.",
       "opening_hours":{"daily":{"open":"09:00","close":"03:00"}},
-      "rating":"0.0"
+      "rating":"4.3"
     }},
     {"model":"restaurants.restaurant","pk":12,"fields":{
       "owner": 1,
@@ -77,7 +77,7 @@
       "capacity":80,
       "description":"Known for tawouk sandwiches and platters.",
       "opening_hours":{"daily":{"open":"11:00","close":"02:00"}},
-      "rating":"0.0"
+      "rating":"4.0"
     }}
   ]
   
