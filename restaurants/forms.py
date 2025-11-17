@@ -24,6 +24,7 @@ class RestaurantForm(forms.ModelForm):
             "cuisine",
             "capacity",
             "description",
+            "price_level",
             "opening_hours",
              "photo",
         ]

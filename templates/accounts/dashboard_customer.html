@@ -70,118 +70,103 @@
       display:block;
     }
 
-  /* Wrapper inside the white card */
-.browse-section{
-  padding: 12px 12px 0 12px;
-}
+    /* Browse restaurants section wrapper */
+    .browse-section{
+      padding:20px 20px 0 20px;  /* more air inside the big white card */
+    }
 
-/* Title spacing */
-.browse-title{
-  font-size: 20px;
-  font-weight: 800;
-  margin: 0 0 12px 0;
-}
+    /* Bigger title */
+    .browse-title{
+      font-size:26px;
+      font-weight:800;
+      margin:0 0 18px 0;
+    }
 
-/* Search panel card */
-.resto-search-panel{
-  background:#fff;
-  border:1px solid #e6e7eb;
-  border-radius:18px;
-  padding:12px;
-  box-shadow:0 6px 24px rgba(0,0,0,.06);
-  margin-bottom:18px;
-}
+    /* Search panel card */
+    .resto-search-panel{
+      background:#fff;
+      border:1px solid #e6e7eb;
+      border-radius:18px;
+      padding:12px;
+      box-shadow:0 6px 24px rgba(0,0,0,.06);
+      margin-bottom:32px;  /* more gap before restaurant list */
+    }
 
-/* Grid layout like the Browse page */
-.resto-filters{
-  display:grid;
-  grid-template-columns:2fr 1.4fr auto;
-  gap:10px;
-}
+    /* Layout for search + button */
+    .resto-filters{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap; /* lets chips wrap under the row */
+    }
 
-/* Inputs in the search panel */
-.resto-filters input{
-  width:100%;
-  height:44px;
-  padding:0 14px;
-  border-radius:12px;
-  border:1px solid #e6e7eb;
-  background:#fff;
-  font:inherit;
-}
+    /* Single big search input */
+    .resto-filters input{
+      flex:1;
+      min-width:0;
+      height:44px;
+      padding:0 14px;
+      border-radius:12px;
+      border:1px solid #e6e7eb;
+      background:#fff;
+      font:inherit;
+    }
 
-/* Orange Search button */
-.btn-search{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  height:44px;
-  padding:0 18px;
-  border-radius:12px;
-  border:none;
-  background:#ff7a1a;
-  color:#fff;
-  font-weight:600;
-  cursor:pointer;
-}
-.btn-search:hover{ background:#ff6a00; }
+    /* Orange Search button */
+    .btn-search{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      height:44px;
+      padding:0 18px;
+      border-radius:12px;
+      border:none;
+      background:#ff7a1a;
+      color:#fff;
+      font-weight:600;
+      cursor:pointer;
+    }
+    .btn-search:hover{ background:#ff6a00; }
 
-/* Chips row under the inputs */
-.resto-chips{
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-  margin-top:10px;
-  grid-column:1 / -1;
-}
+    /* Chips row under the input */
+    .resto-chips{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:10px;
+      width:100%; /* full width under the search row */
+    }
 
-/* Same chip style as Browse page */
-.chip{
-  height:32px;
-  padding:0 12px;
-  border-radius:999px;
-  background:#f3f4f6;
-  border:1px solid #e6e7eb;
-  font-size:13px;
-}
-.chip:hover{ background:#eef0f3; }
+    /* Same chip style as Browse page */
+    .chip{
+      height:32px;
+      padding:0 12px;
+      border-radius:999px;
+      background:#f3f4f6;
+      border:1px solid #e6e7eb;
+      font-size:13px;
+    }
+    .chip:hover{ background:#eef0f3; }
 
-/* Visually hidden labels */
-.sr-only{
-  position:absolute;
-  left:-9999px;
-}
+    /* Visually hidden labels */
+    .sr-only{
+      position:absolute;
+      left:-9999px;
+    }
 
+    /* Separator between search and restaurant cards */
+    .restaurant-list{
+      padding-top:12px;
+      border-top:1px solid #f3f4f6;  /* light line */
+    }
 
-.browse-section{
-  padding: 20px 20px 0 20px;  /* more air inside the big white card */
-}
-
-/* Bigger title */
-.browse-title{
-  font-size: 26px;
-  font-weight: 800;
-  margin: 0 0 18px 0;
-}
-
-/* Search panel card */
-.resto-search-panel{
-  background:#fff;
-  border:1px solid #e6e7eb;
-  border-radius:18px;
-  padding:12px;
-  box-shadow:0 6px 24px rgba(0,0,0,.06);
-  margin-bottom:32px;  /* more gap before restaurant list */
-}
-
-/* NEW: separator between search and restaurants */
-.restaurant-list{
-  padding-top: 12px;
-  border-top: 1px solid #f3f4f6;  /* light line */
-}
-
-
-
+    /* Simple $-only price indicator, same style as meta text */
+    .price-level{
+      font-size:14px;
+      font-weight:500;
+      color:#6b7280;  /* same grey as other meta text */
+      letter-spacing:1px;
+    }
   </style>
 </head>
 
@@ -213,7 +198,7 @@
           <div class="browse-section">
             <div class="browse-section">
               <h2 class="browse-title">Browse restaurants</h2>
-            
+
               <!-- Search panel -->
               <div class="resto-search-panel" role="region" aria-label="Filters">
                 <form class="resto-filters" method="get">
@@ -221,14 +206,9 @@
                   <input id="q" type="text" name="q"
                          placeholder="Search by name or address…"
                          value="{{ q|default:'' }}">
-            
-                  <label class="sr-only" for="cuisine">Cuisine</label>
-                  <input id="cuisine" type="text" name="cuisine"
-                         placeholder="Cuisine (e.g., Italian, Sushi…)"
-                         value="{{ cuisine|default:'' }}">
-            
+
                   <button class="btn-search" type="submit">Search</button>
-            
+
                   <div class="resto-chips" aria-label="Quick categories">
                     <button type="submit" name="cuisine" value="Lebanese" class="chip">Lebanese</button>
                     <button type="submit" name="cuisine" value="Burger"   class="chip">Burger</button>
@@ -238,19 +218,16 @@
                   </div>
                 </form>
               </div>
-            
+
               <div class="restaurant-list">
                 {% for r in restaurants %}
                   <!-- restaurant card -->
-                  
+
                 {% endfor %}
               </div>
-              
+
             </div>
-            
           </div>
-          
-          
         </div>
 
         {% if not has_restaurants %}
@@ -275,6 +252,10 @@
                   <div class="meta">
                     <span>{{ r.cuisine }}</span><span class="dot"></span>
                     <span>{{ r.address }}</span>
+                    {% if r.price_level %}
+                      <span class="dot"></span>
+                      <span class="price-level">{{ r.price_level_icon }}</span>
+                    {% endif %}
                   </div>
                 </div>
                 <div class="city">{{ r.city|default:"" }}</div>
@@ -350,6 +331,9 @@
                 <div class="res-main">
                   <strong>{{ inst.restaurant.name }}</strong><br>
                   {{ inst.reservation_date }} • {{ inst.reservation_time|time:"H:i" }} • {{ inst.party_size }} Guests
+                  {% if inst.restaurant.price_level %}
+                    • <span class="price-level">{{ inst.restaurant.price_level_icon }}</span>
+                  {% endif %}
 
                   {% if inst.status == 'PENDING' %}
                     <span class="badge badge--pending">Pending</span>
@@ -389,6 +373,9 @@
               <strong>{{ inst.restaurant.name }}</strong>
               <div class="muted">
                 {{ inst.reservation_date }} • {{ inst.reservation_time|time:"H:i" }} • {{ inst.party_size }} Guests
+                {% if inst.restaurant.price_level %}
+                  • <span class="price-level">{{ inst.restaurant.price_level_icon }}</span>
+                {% endif %}
 
                 {% if inst.status == 'CANCELLED' %}
                   <span class="badge badge--cancelled">Cancelled by you</span>

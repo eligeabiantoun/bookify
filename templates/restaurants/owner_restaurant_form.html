@@ -130,7 +130,8 @@
 
     input[type="text"],
     input[type="number"],
-    textarea{
+    textarea,
+    select{
       width:100%;
       padding:12px 12px;
       border-radius:12px;
@@ -152,7 +153,8 @@
     }
 
     input:focus,
-    textarea:focus{
+    textarea:focus,
+    select:focus{
       border-color:var(--primary);
       box-shadow:0 0 0 1px rgba(249,115,22,.15);
     }
@@ -373,6 +375,12 @@
             <label for="{{ form.capacity.id_for_label }}">Capacity</label>
             {{ form.capacity }}
             {% for e in form.capacity.errors %}<div class="field-error">{{ e }}</div>{% endfor %}
+          </div>
+          <div>
+            <label for="{{ form.price_level.id_for_label }}">Price level</label>
+            {{ form.price_level }}
+            <div class="help">How expensive is your restaurant on average? (shown to customers as $–$$$$)</div>
+            {% for e in form.price_level.errors %}<div class="field-error">{{ e }}</div>{% endfor %}
           </div>
         </div>
 

@@ -4,6 +4,12 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 class Restaurant(models.Model):
+    PRICE_LEVELS = (
+        (1,"Budget"),
+        (2,"Moderate"),
+        (3,"Expensive"),
+        (4,"Luxury"),
+    )
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -14,6 +20,12 @@ class Restaurant(models.Model):
     cuisine = models.CharField(max_length=100)
     capacity = models.PositiveIntegerField()
     description = models.TextField(blank=True)
+    price_level = models.PositiveSmallIntegerField(
+        choices=PRICE_LEVELS,
+        null=True,
+        blank=True,
+        help_text="1 = Budget, 4 = Luxury",
+    )
     opening_hours = models.JSONField(blank=True, default=dict)
     # Keep rating as stored value; validate 0..5 (one decimal place allowed)
     photo = models.ImageField(
@@ -28,6 +40,15 @@ class Restaurant(models.Model):
         validators=[MinValueValidator(0), MaxValueValidator(5)],
         help_text="Average rating shown to users (0.0–5.0).",
     )
+
+    def price_level_icon(self):
+        """
+        Returns $, $$, $$$, or $$$$ based on price_level.
+        Safe to call in templates.
+        """
+        if not self.price_level:
+            return ""
+        return "$" * int(self.price_level)
 
     def __str__(self):
         return self.name

@@ -148,6 +148,13 @@
       line-height:1;
       color:var(--text);
     }
+    .price-level{
+      font-size:14px;
+      font-weight:500;
+      color:#6b7280;
+      letter-spacing:1px;
+    }
+
   </style>
 
 </head>
@@ -212,11 +219,15 @@
             <!-- SAME AS BEFORE: name + meta only -->
             <h3 class="name">{{ r.name }}</h3>
 
-            <div class="meta">
-              <div class="meta-row">
-                <span>{{ r.cuisine }}</span><span class="dot"></span><span>{{ r.address }}</span>
-              </div>
-            </div>
+          <div class="meta">
+            <span>{{ r.cuisine }}</span><span class="dot"></span>
+            <span>{{ r.address }}</span>
+            {% if r.price_level %}
+              <span class="dot"></span>
+              <span class="price-level">{{ r.price_level_icon }}</span>
+            {% endif %}
+          </div>
+
           </div>
 
           <div class="actions">
