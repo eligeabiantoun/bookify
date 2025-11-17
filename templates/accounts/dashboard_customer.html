@@ -69,6 +69,119 @@
       object-fit:cover;
       display:block;
     }
+
+  /* Wrapper inside the white card */
+.browse-section{
+  padding: 12px 12px 0 12px;
+}
+
+/* Title spacing */
+.browse-title{
+  font-size: 20px;
+  font-weight: 800;
+  margin: 0 0 12px 0;
+}
+
+/* Search panel card */
+.resto-search-panel{
+  background:#fff;
+  border:1px solid #e6e7eb;
+  border-radius:18px;
+  padding:12px;
+  box-shadow:0 6px 24px rgba(0,0,0,.06);
+  margin-bottom:18px;
+}
+
+/* Grid layout like the Browse page */
+.resto-filters{
+  display:grid;
+  grid-template-columns:2fr 1.4fr auto;
+  gap:10px;
+}
+
+/* Inputs in the search panel */
+.resto-filters input{
+  width:100%;
+  height:44px;
+  padding:0 14px;
+  border-radius:12px;
+  border:1px solid #e6e7eb;
+  background:#fff;
+  font:inherit;
+}
+
+/* Orange Search button */
+.btn-search{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  height:44px;
+  padding:0 18px;
+  border-radius:12px;
+  border:none;
+  background:#ff7a1a;
+  color:#fff;
+  font-weight:600;
+  cursor:pointer;
+}
+.btn-search:hover{ background:#ff6a00; }
+
+/* Chips row under the inputs */
+.resto-chips{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:10px;
+  grid-column:1 / -1;
+}
+
+/* Same chip style as Browse page */
+.chip{
+  height:32px;
+  padding:0 12px;
+  border-radius:999px;
+  background:#f3f4f6;
+  border:1px solid #e6e7eb;
+  font-size:13px;
+}
+.chip:hover{ background:#eef0f3; }
+
+/* Visually hidden labels */
+.sr-only{
+  position:absolute;
+  left:-9999px;
+}
+
+
+.browse-section{
+  padding: 20px 20px 0 20px;  /* more air inside the big white card */
+}
+
+/* Bigger title */
+.browse-title{
+  font-size: 26px;
+  font-weight: 800;
+  margin: 0 0 18px 0;
+}
+
+/* Search panel card */
+.resto-search-panel{
+  background:#fff;
+  border:1px solid #e6e7eb;
+  border-radius:18px;
+  padding:12px;
+  box-shadow:0 6px 24px rgba(0,0,0,.06);
+  margin-bottom:32px;  /* more gap before restaurant list */
+}
+
+/* NEW: separator between search and restaurants */
+.restaurant-list{
+  padding-top: 12px;
+  border-top: 1px solid #f3f4f6;  /* light line */
+}
+
+
+
   </style>
 </head>
 
@@ -97,11 +210,47 @@
     <section>
       <div class="panel">
         <div class="panel-head">
-          <h2>Browse restaurants</h2>
-          <form method="get" class="searchbar">
-            <input type="text" name="q" value="{{ search_query }}" placeholder='Try "Italian" or "Downtown"'>
-            <button class="btn brand" type="submit">Search</button>
-          </form>
+          <div class="browse-section">
+            <div class="browse-section">
+              <h2 class="browse-title">Browse restaurants</h2>
+            
+              <!-- Search panel -->
+              <div class="resto-search-panel" role="region" aria-label="Filters">
+                <form class="resto-filters" method="get">
+                  <label class="sr-only" for="q">Search</label>
+                  <input id="q" type="text" name="q"
+                         placeholder="Search by name or address…"
+                         value="{{ q|default:'' }}">
+            
+                  <label class="sr-only" for="cuisine">Cuisine</label>
+                  <input id="cuisine" type="text" name="cuisine"
+                         placeholder="Cuisine (e.g., Italian, Sushi…)"
+                         value="{{ cuisine|default:'' }}">
+            
+                  <button class="btn-search" type="submit">Search</button>
+            
+                  <div class="resto-chips" aria-label="Quick categories">
+                    <button type="submit" name="cuisine" value="Lebanese" class="chip">Lebanese</button>
+                    <button type="submit" name="cuisine" value="Burger"   class="chip">Burger</button>
+                    <button type="submit" name="cuisine" value="Sushi"    class="chip">Sushi</button>
+                    <button type="submit" name="cuisine" value="Pizza"    class="chip">Pizza</button>
+                    <button type="submit" name="cuisine" value="Cafe"     class="chip">Cafe</button>
+                  </div>
+                </form>
+              </div>
+            
+              <div class="restaurant-list">
+                {% for r in restaurants %}
+                  <!-- restaurant card -->
+                  
+                {% endfor %}
+              </div>
+              
+            </div>
+            
+          </div>
+          
+          
         </div>
 
         {% if not has_restaurants %}
@@ -290,4 +439,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
-
