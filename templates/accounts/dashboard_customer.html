@@ -6,15 +6,19 @@
   <title>Customer Dashboard • Bookify</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- Theme -->
   <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 
-  <!-- Flatpickr -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
-  <!-- Inline styling for badges + cancel -->
   <style>
+    /* Adjust main grid to make the Browse section wider (3fr) */
+    .grid {
+        display: grid; /* Assuming this is already set in dashboard.css */
+        grid-template-columns: 3fr 1fr; 
+        gap: 20px; /* Adjust gap if needed, but keeping it simple for now */
+    }
+
     .badge {
       display:inline-flex;
       align-items:center;
@@ -23,6 +27,7 @@
       font-size:12px;
       font-weight:500;
       margin-left:8px;
+      margin-top: 8px; 
     }
     .badge--pending {
       background:#fff7ed;
@@ -70,115 +75,270 @@
       display:block;
     }
 
-    /* Browse restaurants section wrapper */
-    .browse-section{
-      padding:20px 20px 0 20px;  /* more air inside the big white card */
+  /* Wrapper inside the white card */
+.browse-section{
+  padding: 20px 20px 0 20px;  /* more air inside the big white card */
+}
+
+/* Bigger title */
+.browse-title{
+  font-size: 26px;
+  font-weight: 800;
+  margin: 0 0 18px 0;
+}
+
+/* Search panel card */
+.resto-search-panel{
+  background:#fff;
+  border:1px solid #e6e7eb;
+  border-radius:18px;
+  padding:12px;
+  box-shadow:0 6px 24px rgba(0,0,0,.06);
+  margin-bottom:32px;  /* more gap before restaurant list */
+}
+
+/* Grid layout like the Browse page */
+.resto-filters{
+  display:grid;
+  grid-template-columns:2fr 1.4fr auto;
+  gap:10px;
+}
+
+/* Inputs in the search panel */
+.resto-filters input{
+  width:100%;
+  height:44px;
+  padding:0 14px;
+  border-radius:12px;
+  border:1px solid #e6e7eb;
+  background:#fff;
+  font:inherit;
+}
+
+/* Orange Search button */
+.btn-search{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  height:44px;
+  padding:0 18px;
+  border-radius:12px;
+  border:none;
+  background:#ff7a1a;
+  color:#fff;
+  font-weight:600;
+  cursor:pointer;
+}
+.btn-search:hover{ background:#ff6a00; }
+
+/* Chips row under the inputs */
+.resto-chips{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:10px;
+  grid-column:1 / -1;
+}
+
+/* Same chip style as Browse page */
+.chip{
+  height:32px;
+  padding:0 12px;
+  border-radius:999px;
+  background:#f3f4f6;
+  border:1px solid #e6e7eb;
+  font-size:13px;
+}
+.chip:hover{ background:#eef0f3; }
+
+/* Visually hidden labels */
+.sr-only{
+  position:absolute;
+  left:-9999px;
+}
+
+/* Simple $-only price indicator */
+.price-level{
+  font-size:13px;
+  font-weight:500;
+  color:#6b7280; 
+  letter-spacing:1px;
+  margin-left: 4px; 
+}
+
+
+/* NEW STYLES FOR THE RESTAURANT CARD TO MATCH IMAGE 1 */
+
+/* The restaurant card wrapper (panel inside the panel) */
+.restaurant-card {
+  background: #fff;
+  border: 1px solid #e6e7eb;
+  border-radius: 18px;
+  box-shadow: 0 4px 12px rgba(0,0,0,.04);
+  margin-bottom: 18px; /* space between cards */
+  /* >>> UPDATED CODE: Increased padding to make the card appear larger <<< */
+  padding: 55px; 
+}
+
+/* Restaurant Header and Metadata Section */
+.restaurant-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px; /* space before description */
+}
+
+/* Custom Avatar/Thumbnail */
+.restaurant-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px; /* Slightly more square */
+  background: #ff7a1a;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.restaurant-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.restaurant-info h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.restaurant-info .meta {
+  font-size: 13px;
+  color: #6b7280; /* Gray text */
+  margin-top: 2px;
+}
+.restaurant-info .meta span {
+  margin-right: 4px;
+}
+.restaurant-info .meta .dot::before {
+  content: '•';
+  margin-right: 4px;
+}
+
+/* Restaurant Description */
+.restaurant-desc {
+  font-size: 14px;
+  color: #374151;
+  margin: 0 0 16px 0;
+  /* Increased padding-left to match the new overall card padding */
+  padding-left: 52px; 
+}
+
+/* Hours and Availability */
+.hours-avail {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  /* Increased padding-left to match the new overall card padding */
+  padding-left: 52px; 
+  margin-bottom: 18px;
+  border-bottom: 1px solid #f3f4f6; /* Subtle separator before form */
+  padding-bottom: 12px;
+}
+.hours-avail .day {
+  font-weight: 600;
+  color: #1f2937;
+}
+.hours-avail .range {
+  font-size: 14px;
+  color: #4b5563;
+}
+
+/* Reservation Form */
+.req-form {
+  /* Increased padding-left to match the new overall card padding */
+  padding-left: 52px; 
+}
+
+.req-form .row3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.req-form .field {
+  flex: 1;
+}
+
+.req-form .field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.req-form input[type="text"],
+.req-form select,
+.req-form textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #e6e7eb;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.req-form textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+/* The orange button in the bottom-right */
+.req-form .row-end {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 15px;
+}
+.req-form .btn {
+  height: 40px;
+  padding: 0 18px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  background: #ff7a1a;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+.req-form .btn:hover {
+  background: #ff6a00;
+}
+
+    /* Add extra space below the first panel in the aside (Upcoming reservations) */
+    aside > .panel:first-child {
+        margin-bottom: 32px; 
     }
 
-    /* Bigger title */
-    .browse-title{
-      font-size:26px;
-      font-weight:800;
-      margin:0 0 18px 0;
-    }
-
-    /* Search panel card */
-    .resto-search-panel{
-      background:#fff;
-      border:1px solid #e6e7eb;
-      border-radius:18px;
-      padding:12px;
-      box-shadow:0 6px 24px rgba(0,0,0,.06);
-      margin-bottom:32px;  /* more gap before restaurant list */
-    }
-
-    /* Layout for search + button */
-    .resto-filters{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      flex-wrap:wrap; /* lets chips wrap under the row */
-    }
-
-    /* Single big search input */
-    .resto-filters input{
-      flex:1;
-      min-width:0;
-      height:44px;
-      padding:0 14px;
-      border-radius:12px;
-      border:1px solid #e6e7eb;
-      background:#fff;
-      font:inherit;
-    }
-
-    /* Orange Search button */
-    .btn-search{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      height:44px;
-      padding:0 18px;
-      border-radius:12px;
-      border:none;
-      background:#ff7a1a;
-      color:#fff;
-      font-weight:600;
-      cursor:pointer;
-    }
-    .btn-search:hover{ background:#ff6a00; }
-
-    /* Chips row under the input */
-    .resto-chips{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      margin-top:10px;
-      width:100%; /* full width under the search row */
-    }
-
-    /* Same chip style as Browse page */
-    .chip{
-      height:32px;
-      padding:0 12px;
-      border-radius:999px;
-      background:#f3f4f6;
-      border:1px solid #e6e7eb;
-      font-size:13px;
-    }
-    .chip:hover{ background:#eef0f3; }
-
-    /* Visually hidden labels */
-    .sr-only{
-      position:absolute;
-      left:-9999px;
-    }
-
-    /* Separator between search and restaurant cards */
-    .restaurant-list{
-      padding-top:12px;
-      border-top:1px solid #f3f4f6;  /* light line */
-    }
-
-    /* Simple $-only price indicator, same style as meta text */
-    .price-level{
-      font-size:14px;
-      font-weight:500;
-      color:#6b7280;  /* same grey as other meta text */
-      letter-spacing:1px;
-    }
   </style>
 </head>
 
 <body>
 <div class="wrap">
 
-  <!-- HEADER -->
   <header class="topbar">
     <div class="hello">
-      <div class="avatar">{{ request.user.first_name|default:request.user.email|slice:":1" }}</div>
+      <div class="avatar">
+          {% if request.user.first_name %}{{ request.user.first_name|slice:":1" }}
+          {% else %}{{ request.user.email|slice:":1" }}{% endif %}
+      </div>
       <div>
-        <h1 class="title">Welcome back, {{ request.user.first_name|default:request.user.email }}</h1>
+        <h1 class="title">Welcome back, {{ request.user.first_name|default:'Customer' }}</h1>
         <p class="muted">Discover restaurants and request a table in seconds.</p>
       </div>
     </div>
@@ -188,138 +348,126 @@
     </div>
   </header>
 
-  <!-- MAIN CONTENT GRID -->
   <main class="grid">
 
-    <!-- LEFT SIDE: BROWSE RESTAURANTS -->
     <section>
       <div class="panel">
         <div class="panel-head">
           <div class="browse-section">
-            <div class="browse-section">
-              <h2 class="browse-title">Browse restaurants</h2>
-
-              <!-- Search panel -->
-              <div class="resto-search-panel" role="region" aria-label="Filters">
-                <form class="resto-filters" method="get">
-                  <label class="sr-only" for="q">Search</label>
-                  <input id="q" type="text" name="q"
-                         placeholder="Search by name or address…"
-                         value="{{ q|default:'' }}">
-
-                  <button class="btn-search" type="submit">Search</button>
-
-                  <div class="resto-chips" aria-label="Quick categories">
-                    <button type="submit" name="cuisine" value="Lebanese" class="chip">Lebanese</button>
-                    <button type="submit" name="cuisine" value="Burger"   class="chip">Burger</button>
-                    <button type="submit" name="cuisine" value="Sushi"    class="chip">Sushi</button>
-                    <button type="submit" name="cuisine" value="Pizza"    class="chip">Pizza</button>
-                    <button type="submit" name="cuisine" value="Cafe"     class="chip">Cafe</button>
-                  </div>
-                </form>
-              </div>
-
-              <div class="restaurant-list">
-                {% for r in restaurants %}
-                  <!-- restaurant card -->
-
-                {% endfor %}
-              </div>
-
-            </div>
-          </div>
-        </div>
-
-        {% if not has_restaurants %}
-          <div class="empty">No restaurants available yet.</div>
-        {% endif %}
-
-        <div class="cards">
-          {% for item in restaurants %}
-            {% with r=item.obj form=item.form hours=item.opening_hours %}
-            <article class="card {% if active_restaurant_id == r.id %}active{% endif %}">
-              <!-- Card header -->
-              <div class="card-head">
-                {% if r.photo %}
-                  <div class="thumb" aria-hidden="true">
-                    <img src="{{ r.photo.url }}" alt="{{ r.name }} photo" class="thumb-img">
-                  </div>
-                {% else %}
-                  <div class="thumb" aria-hidden="true">{{ r.name|slice:":1" }}</div>
-                {% endif %}
-                <div class="info">
-                  <h3 class="name">{{ r.name }}</h3>
-                  <div class="meta">
-                    <span>{{ r.cuisine }}</span><span class="dot"></span>
-                    <span>{{ r.address }}</span>
-                    {% if r.price_level %}
-                      <span class="dot"></span>
-                      <span class="price-level">{{ r.price_level_icon }}</span>
-                    {% endif %}
-                  </div>
-                </div>
-                <div class="city">{{ r.city|default:"" }}</div>
-              </div>
-
-              {% if r.description %}
-                <p class="desc">{{ r.description }}</p>
-              {% endif %}
-
-              {% if hours %}
-                <div class="hours-table">
-                  {% for day, range in hours %}
-                    <div class="row">
-                      <span class="day">{{ day }}</span>
-                      <span class="range">{{ range }}</span>
-                    </div>
-                  {% endfor %}
-                </div>
-              {% endif %}
-
-              <!-- Reservation Form -->
-              <form method="post" class="req-form" data-restaurant="{{ r.id }}">
-                {% csrf_token %}
-                {{ form.restaurant }}
-
-                {% if form.non_field_errors %}
-                  <div class="form-errors">{{ form.non_field_errors }}</div>
-                {% endif %}
-
-                <div class="row3">
-                  <div class="field">
-                    <label>Date</label>
-                    {{ form.reservation_date }}
-                  </div>
-                  <div class="field">
-                    <label>Time</label>
-                    {{ form.reservation_time }}
-                  </div>
-                  <div class="field">
-                    <label>Guests</label>
-                    {{ form.party_size }}
-                  </div>
-                </div>
-
-                <div class="field">
-                  <label>Notes (optional)</label>
-                  {{ form.notes }}
-                </div>
-
-                <div class="row-end">
-                  <button class="btn brand" type="submit">Request table</button>
+            <h2 class="browse-title">Browse restaurants</h2>
+          
+            <div class="resto-search-panel" role="region" aria-label="Filters">
+              <form class="resto-filters" method="get">
+                <label class="sr-only" for="q">Search</label>
+                <input id="q" type="text" name="q"
+                       placeholder="Search by name or address…"
+                       value="{{ q|default:'' }}">
+          
+                <label class="sr-only" for="cuisine">Cuisine</label>
+                <input id="cuisine" type="text" name="cuisine"
+                       placeholder="Cuisine (e.g., Italian, Sushi…)"
+                       value="{{ cuisine|default:'' }}">
+          
+                <button class="btn-search" type="submit">Search</button>
+          
+                <div class="resto-chips" aria-label="Quick categories">
+                  <button type="submit" name="cuisine" value="Lebanese" class="chip">Lebanese</button>
+                  <button type="submit" name="cuisine" value="Burger"   class="chip">Burger</button>
+                  <button type="submit" name="cuisine" value="Sushi"    class="chip">Sushi</button>
+                  <button type="submit" name="cuisine" value="Pizza"    class="chip">Pizza</button>
+                  <button type="submit" name="cuisine" value="Cafe"     class="chip">Cafe</button>
                 </div>
               </form>
-            </article>
-            {% endwith %}
-          {% endfor %}
+            </div>
+          
+            <div class="restaurant-list">
+              {% if not has_restaurants %}
+                <div class="empty">No restaurants available yet.</div>
+              {% endif %}
+
+              {% for item in restaurants %}
+                {% with r=item.obj form=item.form hours=item.opening_hours %}
+                <article class="restaurant-card {% if active_restaurant_id == r.id %}active{% endif %}">
+                  
+                  <div class="restaurant-header">
+                    {% if r.photo %}
+                      <div class="restaurant-avatar" aria-hidden="true">{{ r.name|slice:":1" }}</div>
+                    {% else %}
+                      <div class="restaurant-avatar" aria-hidden="true">{{ r.name|slice:":1" }}</div>
+                    {% endif %}
+                    <div class="restaurant-info">
+                      <h3 class="name">{{ r.name }}</h3>
+                      <div class="meta">
+                        <span>{{ r.cuisine }}</span><span class="dot"></span>
+                        <span>{{ r.city|default:"" }}, {{ r.address }}</span>
+                        {% if r.price_level %}
+                          <span class="dot"></span>
+                          <span class="price-level">{{ r.price_level_icon }}</span>
+                        {% endif %}
+                      </div>
+                    </div>
+                  </div>
+
+                  {% if r.description %}
+                    <p class="restaurant-desc">{{ r.description }}</p>
+                  {% endif %}
+
+                  <div class="hours-avail">
+                    <span class="day">daily</span>
+                    {% if hours %}
+                      <span class="range">
+                        {% for day, range in hours %}
+                          {% if forloop.first %}{{ range }}{% endif %}
+                        {% endfor %}
+                      </span>
+                    {% else %}
+                      <span class="range">08:00 - 02:00</span> {% endif %}
+                  </div>
+
+                  <form method="post" class="req-form" data-restaurant="{{ r.id }}">
+                    {% csrf_token %}
+                    {{ form.restaurant }}
+
+                    {% if form.non_field_errors %}
+                      <div class="form-errors">{{ form.non_field_errors }}</div>
+                    {% endif %}
+
+                    <div class="row3">
+                      <div class="field">
+                        <label>Date</label>
+                        {{ form.reservation_date }}
+                      </div>
+                      <div class="field">
+                        <label>Time</label>
+                        {{ form.reservation_time }}
+                      </div>
+                      <div class="field">
+                        <label>Guests</label>
+                        {{ form.party_size }}
+                      </div>
+                    </div>
+
+                    <div class="field">
+                      <label>Notes (optional)</label>
+                      {{ form.notes }}
+                    </div>
+
+                    <div class="row-end">
+                      <button class="btn brand" type="submit">Request table</button>
+                    </div>
+                  </form>
+                </article>
+                {% endwith %}
+              {% endfor %}
+            </div>
+            
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- RIGHT SIDE: UPCOMING + PAST -->
     <aside>
 
-      <!-- UPCOMING -->
       <div class="panel">
         <h2>Upcoming reservations</h2>
 
@@ -362,7 +510,6 @@
         {% endif %}
       </div>
 
-      <!-- PAST & CANCELLED -->
       {% if past_reservations %}
       <div class="panel">
         <h2>Past &amp; Cancelled Reservations</h2>
