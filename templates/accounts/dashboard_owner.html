@@ -251,11 +251,14 @@
         </div>
       </div>
 
-      <nav class="actions">
-        <a href="{% url 'home' %}" class="btn">&larr; Home</a>
-        <a class="btn" href="{{ contact_support_url }}">Contact support</a>
-        <a href="{% url 'logout' %}" class="btn">Logout</a>
-      </nav>
+      <div class="actions">
+  <a href="{% url 'home' %}" class="btn ghost">← Back home</a>
+
+  <form method="post" action="{% url 'logout' %}" style="display:inline;">
+    {% csrf_token %}
+    <button type="submit" class="btn">Log out</button>
+  </form>
+</div>
     </header>
 
     <!-- FLASH MESSAGES -->
