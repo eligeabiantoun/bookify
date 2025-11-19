@@ -11,6 +11,7 @@ from restaurants.views import (
     PublicRestaurantDetailView,
     owner_restaurant_create,
     owner_restaurant_edit,
+    rate_restaurant,
 )
 
 urlpatterns = [
@@ -52,6 +53,9 @@ urlpatterns = [
         auth_views.PasswordResetCompleteView.as_view(template_name="accounts/password_reset_complete.html"),
         name="password_reset_complete",
     ),
+
+    path("restaurants/<int:pk>/rate/", rate_restaurant, name="rate_restaurant"),
+
 
     # ---------- Invitations ----------
     path("auth/invitations/create/", a.create_invitation_view, name="create_invitation"),

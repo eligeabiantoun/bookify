@@ -32,10 +32,15 @@
       text-decoration:none;
       color:inherit;
       box-shadow:var(--shadow-sm);
+      cursor:pointer;
     }
     .btn:hover{background:#fcfcfc}
     .btn.brand{background:var(--brand); border-color:var(--brand); color:#fff}
     .btn.brand:hover{background:var(--brand-600)}
+    .btn.small{
+      padding:6px 12px;
+      font-size:13px;
+    }
 
     .panel{
       background:var(--panel);
@@ -45,7 +50,7 @@
       box-shadow:var(--shadow);
     }
     h1{margin:0; font-size:28px}
-    .meta{color:var(--muted); margin-top:6px}
+    .meta{color:var(--muted); margin-top:6px; font-size:14px}
     .section{margin-top:18px}
     .group{display:flex; gap:10px; flex-wrap:wrap}
 
@@ -57,6 +62,55 @@
       border-radius:14px;
       margin-top:16px;
       border:1px solid var(--line);
+    }
+
+    /* Header + rating pill */
+    .rest-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:16px;
+    }
+    .rating-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:4px;
+      padding:4px 10px;
+      border-radius:999px;
+      background:#ffffff;
+      border:1px solid var(--line);
+      font-size:13px;
+      font-weight:600;
+      white-space:nowrap;
+    }
+    .rating-pill-star{
+      font-size:12px;
+      color:#16a34a;
+      line-height:1;
+    }
+    .rating-pill-value{
+      color:var(--text);
+      line-height:1;
+    }
+
+    /* Rating section */
+    .rating-section{
+      border-top:1px solid var(--line);
+      margin-top:16px;
+      padding-top:16px;
+    }
+    .rating-form{
+      display:flex;
+      flex-wrap:wrap;
+      align-items:center;
+      gap:12px;
+    }
+    .rating-form select{
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      font-size:14px;
+      background:#fff;
     }
 
     /* Hours block */
@@ -82,11 +136,26 @@
     <p><a class="btn" href="{% url 'restaurant_browse' %}">← Back to list</a></p>
 
     <article class="panel">
-      <header>
-        <h1>{{ restaurant.name }}</h1>
-        <p class="meta">
-          {{ restaurant.cuisine }} • {{ restaurant.address }} • Seats {{ restaurant.capacity }}
-        </p>
+      <header class="rest-header">
+        <div>
+          <h1>{{ restaurant.name }}</h1>
+          <p class="meta">
+            {{ restaurant.cuisine }} • {{ restaurant.address }}
+            {% if restaurant.price_level %}
+              •
+              {% for i in "1234" %}
+                {% if forloop.counter <= restaurant.price_level %}$ {% endif %}
+              {% endfor %}
+            {% endif %}
+          </p>
+        </div>
+
+        {% with rr=restaurant.rating|default:0|floatformat:1 %}
+          <div class="rating-pill" aria-label="{{ rr }} out of 5">
+            <span class="rating-pill-star">★</span>
+            <span class="rating-pill-value">{{ rr }}</span>
+          </div>
+        {% endwith %}
       </header>
 
       {% if restaurant.photo %}
@@ -96,6 +165,38 @@
       {% if restaurant.description %}
         <p class="section">{{ restaurant.description }}</p>
       {% endif %}
+
+      <!-- Rating section (real rating, not just visual) -->
+      <div class="section rating-section">
+        <h3 style="margin:0 0 8px 0">Rate this restaurant</h3>
+
+        {% if user.is_authenticated %}
+          <form method="post"
+                action="{% url 'rate_restaurant' restaurant.pk %}"
+                class="rating-form">
+            {% csrf_token %}
+            <label>
+              <span style="margin-right:6px">Your rating:</span>
+              <select name="score">
+                <option value="1">1 ★</option>
+                <option value="2">2 ★★</option>
+                <option value="3">3 ★★★</option>
+                <option value="4">4 ★★★★</option>
+                <option value="5">5 ★★★★★</option>
+              </select>
+            </label>
+            <button type="submit" class="btn small brand">Save rating</button>
+          </form>
+
+          {% if user_rating %}
+            <p class="meta" style="margin-top:6px">
+              You last rated this restaurant {{ user_rating.score }} / 5.
+            </p>
+          {% endif %}
+        {% else %}
+          <p class="meta">Log in to rate this restaurant.</p>
+        {% endif %}
+      </div>
 
       <!-- CTA (role-aware, no forced ?next) -->
       <div class="section group">

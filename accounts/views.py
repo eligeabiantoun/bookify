@@ -298,7 +298,7 @@ def customer_dashboard(request):
             | Q(cuisine__icontains=search_query)
             | Q(address__icontains=search_query)
         )
-    restaurants_qs = restaurants_qs.order_by("-rating", "name")
+    restaurants_qs = restaurants_qs.order_by("name")
     restaurants_list = list(restaurants_qs)
 
     reservation_form_with_errors = None    # a ReservationForm with errors, or None

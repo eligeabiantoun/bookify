@@ -131,6 +131,11 @@
     }
     .btn-search:hover{ background:#ff6a00; }
 
+    .restaurant-desc {
+      padding-left: 80px;  /* aligns with avatar width */
+}
+
+
     /* Chips row under the inputs */
     .resto-chips{
       display:flex;
@@ -165,6 +170,61 @@
       letter-spacing:1px;
       margin-left: 4px; 
     }
+    .rating-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  padding:2px 8px;
+  border-radius:999px;
+  background:#ffffff;
+  border:1px solid #e2e8f0;
+  font-size:12px;
+  font-weight:600;
+  white-space:nowrap;
+}
+.rating-pill-star{
+  font-size:11px;
+  line-height:1;
+  color:#16a34a;
+}
+.rating-pill-value{
+  line-height:1;
+  color:#1f2328;
+}
+
+    /* Rating inline form under header/description */
+    .rating-inline {
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding-left:80px;    /* same indent as hours */
+      margin:6px 0 10px 0;
+      font-size:13px;
+      color:#4b5563;
+}
+
+    .rating-inline select{
+      padding:4px 8px;
+      border-radius:999px;
+      border:1px solid #e5e7eb;
+      font-size:13px;
+      background:#fff;
+    }
+    .rating-inline button{
+      border:none;
+      background:#ff7a1a;
+      color:#fff;
+      border-radius:999px;
+      padding:4px 10px;
+      font-size:12px;
+      font-weight:600;
+      cursor:pointer;
+    }
+    .rating-inline button:hover{
+      background:#ff6a00;
+    }
+
+
 
 
     /* NEW STYLES FOR THE RESTAURANT CARD TO MATCH IMAGE 1 */
@@ -180,34 +240,37 @@
       padding: 55px; 
     }
 
-    /* Restaurant Header and Metadata Section */
-    .restaurant-header {
-      display: flex;
-      align-items: center;
-      margin-bottom: 12px; /* space before description */
-    }
+/* Restaurant Header and Metadata Section */
+.restaurant-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 12px; /* space before description */
+}
 
-    /* Custom Avatar/Thumbnail */
-    .restaurant-avatar {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 40px;
-      height: 40px;
-      border-radius: 8px; /* Slightly more square */
-      background: #ff7a1a;
-      color: #fff;
-      font-size: 18px;
-      font-weight: 600;
-      margin-right: 12px;
-      flex-shrink: 0;
-    }
+/* Bigger restaurant avatar / photo */
+.restaurant-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;          /* was 40px */
+  height: 80px;         /* was 40px */
+  border-radius: 16px;  /* softer corners for photos */
+  background: #ff7a1a;
+  color: #fff;
+  font-size: 26px;
+  font-weight: 600;
+  margin-right: 16px;
+  flex-shrink: 0;
+  overflow: hidden;     /* keeps photo corners rounded */
+}
 
-    /* Variant when showing an actual photo */
-    .restaurant-avatar--image {
-      padding: 0;
-      background: transparent;
-    }
+/* Variant when showing an actual photo */
+.restaurant-avatar--image {
+  padding: 0;
+  background: transparent;
+}
+
 
     .restaurant-info {
       flex: 1;
@@ -240,20 +303,20 @@
       color: #374151;
       margin: 0 0 16px 0;
       /* Increased padding-left to match the new overall card padding */
-      padding-left: 52px; 
+      padding-left: 80px; 
     }
 
     /* Hours and Availability */
-    .hours-avail {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      /* Increased padding-left to match the new overall card padding */
-      padding-left: 52px; 
-      margin-bottom: 18px;
-      border-bottom: 1px solid #f3f4f6; /* Subtle separator before form */
-      padding-bottom: 12px;
-    }
+.hours-avail {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-left: 80px;   /* match new avatar width */
+  margin-bottom: 18px;
+  border-bottom: 1px solid #f3f4f6;
+  padding-bottom: 12px;
+}
+
     .hours-avail .day {
       font-weight: 600;
       color: #1f2937;
@@ -398,34 +461,63 @@
               {% for item in restaurants %}
                 {% with r=item.obj form=item.form hours=item.opening_hours %}
                 <article class="restaurant-card {% if active_restaurant_id == r.id %}active{% endif %}">
-                  
-                  <div class="restaurant-header">
-                    {% if r.photo %}
-                      <div class="restaurant-avatar restaurant-avatar--image">
-                        <img src="{{ r.photo.url }}" alt="{{ r.name }}" class="thumb-img">
-                      </div>
-                    {% else %}
-                      <div class="restaurant-avatar" aria-hidden="true">
-                        {{ r.name|slice:":1" }}
-                      </div>
-                    {% endif %}
+<div class="restaurant-header">
+    {% if r.photo %}
+      <div class="restaurant-avatar restaurant-avatar--image">
+        <img src="{{ r.photo.url }}" alt="{{ r.name }}" class="thumb-img">
+      </div>
+    {% else %}
+      <div class="restaurant-avatar" aria-hidden="true">
+        {{ r.name|slice:":1" }}
+      </div>
+    {% endif %}
 
-                    <div class="restaurant-info">
-                      <h3 class="name">{{ r.name }}</h3>
-                      <div class="meta">
-                        <span>{{ r.cuisine }}</span><span class="dot"></span>
-                        <span>{{ r.city|default:"" }}, {{ r.address }}</span>
-                        {% if r.price_level %}
-                          <span class="dot"></span>
-                          <span class="price-level">{{ r.price_level_icon }}</span>
-                        {% endif %}
-                      </div>
-                    </div>
-                  </div>
+    <div class="restaurant-info">
+      <h3 class="name">{{ r.name }}</h3>
+
+      <div class="meta">
+        <span>{{ r.cuisine }}</span><span class="dot"></span>
+        <span>{{ r.city|default:"" }}, {{ r.address }}</span>
+
+        {% if r.price_level %}
+          <span class="dot"></span>
+          <span class="price-level">{{ r.price_level_icon }}</span>
+        {% endif %}
+      </div>
+
+      <!-- ⭐️ Rating Pill (added below meta) -->
+      {% with rr=r.rating|default:0|floatformat:1 %}
+        <div class="rating-pill" aria-label="{{ rr }} out of 5">
+          <span class="rating-pill-star">★</span>
+          <span class="rating-pill-value">{{ rr }}</span>
+        </div>
+      {% endwith %}
+      <!-- END rating pill -->
+
+    </div>
+</div>
+
 
                   {% if r.description %}
                     <p class="restaurant-desc">{{ r.description }}</p>
                   {% endif %}
+
+                  <!-- Rating form (customer can rate this restaurant) -->
+                  <form method="post"
+                        action="{% url 'rate_restaurant' r.id %}"
+                        class="rating-inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <span>Rate this restaurant:</span>
+                    <select name="score">
+                      <option value="1">1 ★</option>
+                      <option value="2">2 ★★</option>
+                      <option value="3">3 ★★★</option>
+                      <option value="4">4 ★★★★</option>
+                      <option value="5">5 ★★★★★</option>
+                    </select>
+                    <button type="submit">Save</button>
+                  </form>
 
                   <div class="hours-avail">
                     <span class="day">daily</span>
@@ -439,6 +531,7 @@
                       <span class="range">08:00 - 02:00</span>
                     {% endif %}
                   </div>
+
 
                   <form method="post" class="req-form" data-restaurant="{{ r.id }}">
                     {% csrf_token %}

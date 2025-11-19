@@ -49,9 +49,45 @@ class Restaurant(models.Model):
         if not self.price_level:
             return ""
         return "$" * int(self.price_level)
+    
+    def update_average_rating(self):
+        """
+        Recalculate and store the average rating from RestaurantRating.
+        """
+        agg = self.ratings.aggregate(avg=models.Avg("score"))
+        self.rating = agg["avg"] or 0
+        self.save(update_fields=["rating"])
+
 
     def __str__(self):
         return self.name
+    
+class RestaurantRating(models.Model):
+    restaurant = models.ForeignKey(
+        Restaurant,
+        on_delete=models.CASCADE,
+        related_name="ratings",
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="restaurant_ratings",
+    )
+    score = models.DecimalField(
+        max_digits=2,
+        decimal_places=1,
+        validators=[MinValueValidator(0), MaxValueValidator(5)],
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ("restaurant", "user")
+        ordering = ["-updated_at"]
+
+    def __str__(self):
+        return f"{self.user} → {self.restaurant} = {self.score}"
+
 
 
 class Reservation(models.Model):

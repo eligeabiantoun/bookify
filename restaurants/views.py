@@ -16,7 +16,7 @@ from rest_framework import viewsets, filters
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 # ---------- Local imports ----------
-from .models import Restaurant, Reservation
+from .models import Restaurant, Reservation, RestaurantRating
 from .serializers import RestaurantSerializer
 from .permissions import IsOwnerOrReadOnly
 from .forms import RestaurantForm
@@ -189,8 +189,46 @@ class PublicRestaurantDetailView(DetailView):
             for d in days:
                 rows.append((d, fmt(ot), fmt(ct)))
 
-        ctx["opening_rows"] = rows
+
+                # Current user's rating (if any)
+        user = self.request.user
+        if user.is_authenticated:
+            ctx["user_rating"] = RestaurantRating.objects.filter(
+                restaurant=r,
+                user=user,
+            ).first()
+        else:
+            ctx["user_rating"] = None
         return ctx
+
+@login_required
+@require_POST
+def rate_restaurant(request, pk):
+    restaurant = get_object_or_404(Restaurant, pk=pk)
+
+    # get the redirect target
+    next_url = request.POST.get("next") or request.META.get("HTTP_REFERER") or reverse("restaurant_detail", kwargs={"pk": pk})
+
+    try:
+        score = float(request.POST.get("score", ""))
+    except:
+        messages.error(request, "Invalid rating value.")
+        return redirect(next_url)
+
+    if not (0 <= score <= 5):
+        messages.error(request, "Rating must be between 0 and 5.")
+        return redirect(next_url)
+
+    RestaurantRating.objects.update_or_create(
+        restaurant=restaurant,
+        user=request.user,
+        defaults={"score": score},
+    )
+
+    restaurant.update_average_rating()
+    messages.success(request, "Your rating was saved!")
+
+    return redirect(next_url)
 
 
 # ---------- Customer reservation actions ----------
