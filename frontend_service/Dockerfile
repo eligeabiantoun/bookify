@@ -10,10 +10,11 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt /app/
 
 RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install gunicorn   # 👈 ADD THIS LINE
+RUN pip install gunicorn
 
 COPY . /app/
 
 EXPOSE 8000
 
-CMD ["sh", "booking_service/start.sh"]
+CMD ["sh", "frontend_service/start.sh"]
+

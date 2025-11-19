@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: accounts-deployment
+  namespace: bookify
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: accounts-service
+  template:
+    metadata:
+      labels:
+        app: accounts-service
+    spec:
+      containers:
+        - name: accounts-container
+          image: bookify-accounts:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: bookify-secrets
+                  key: DATABASE_URL
+            - name: DJANGO_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: bookify-secrets
+                  key: DJANGO_SECRET_KEY
+
