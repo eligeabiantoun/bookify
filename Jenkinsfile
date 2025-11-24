@@ -21,7 +21,6 @@ pipeline {
             steps {
                 sh '''
                   echo "==== Using Minikube Docker daemon ===="
-                  eval $(minikube -p minikube docker-env)
 
                   echo "==== Building Bookify images ===="
 
