@@ -15,8 +15,8 @@ spec:
     spec:
       containers:
         - name: search-container
-          image: bookify-search:latest
-          imagePullPolicy: IfNotPresent
+          image: bookify-search-service:latest
+          imagePullPolicy: Never
           ports:
             - containerPort: 8000
           env:

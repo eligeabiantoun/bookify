@@ -15,8 +15,8 @@ spec:
     spec:
       containers:
         - name: accounts-container
-          image: bookify-accounts:latest
-          imagePullPolicy: IfNotPresent
+          image: bookify-accounts-service:latest
+          imagePullPolicy: Never
           ports:
             - containerPort: 8000
           env:

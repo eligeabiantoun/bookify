@@ -15,8 +15,8 @@ spec:
     spec:
       containers:
         - name: booking-container
-          image: bookify-booking:latest
-          imagePullPolicy: IfNotPresent
+          image: bookify-booking-service:latest
+          imagePullPolicy: Never
           ports:
             - containerPort: 8000
           env:

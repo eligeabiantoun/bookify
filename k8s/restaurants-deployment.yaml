@@ -15,8 +15,8 @@ spec:
     spec:
       containers:
         - name: restaurants-container
-          image: bookify-restaurants:latest
-          imagePullPolicy: IfNotPresent
+          image: bookify-restaurants-service:latest
+          imagePullPolicy: Never
           ports:
             - containerPort: 8000
           env:

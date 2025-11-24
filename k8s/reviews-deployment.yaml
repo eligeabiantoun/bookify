@@ -15,8 +15,8 @@ spec:
     spec:
       containers:
         - name: reviews-container
-          image: bookify-reviews:latest
-          imagePullPolicy: IfNotPresent
+          image: bookify-reviews-service:latest
+          imagePullPolicy: Never
           ports:
             - containerPort: 8000
           env:

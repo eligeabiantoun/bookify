@@ -15,8 +15,8 @@ spec:
     spec:
       containers:
         - name: frontend-container
-          image: bookify-frontend:latest
-          imagePullPolicy: IfNotPresent
+          image: bookify-frontend-service:latest
+          imagePullPolicy: Never
           ports:
             - containerPort: 8000
           env:
