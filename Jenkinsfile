@@ -9,14 +9,14 @@ pipeline {
         }
 
         stage('Rebuild Bookify (Docker Compose)') {
-            steps {
-                sh '''
-                docker compose down
-                docker compose build --no-cache
-                docker compose up -d
-                '''
-            }
-        }
+    steps {
+        sh '''
+        docker-compose down || true
+        docker-compose build --no-cache
+        docker-compose up -d
+        '''
+    }
+}
 
         stage('Tests (optional)') {
             steps {
