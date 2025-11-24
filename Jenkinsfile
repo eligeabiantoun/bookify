@@ -2,13 +2,19 @@ pipeline {
     agent any
 
     environment {
+        // 🔁 CHANGE THIS to your real Docker Hub username
         DOCKER_USER = 'YOUR_DOCKERHUB_USERNAME'
+
+        // ID of Docker Hub credentials in Jenkins (Username+Password)
         REGISTRY_CREDENTIALS = 'dockerhub'
+
+        // Kubernetes namespace
         K8S_NAMESPACE = 'bookify'
     }
 
+    // Same as the tutorial: poll Git every 2 minutes
     triggers {
-        pollSCM('H/2 * * * *')   // Every 2 minutes (same as tutorial)
+        pollSCM('H/2 * * * *')
     }
 
     stages {
@@ -32,23 +38,32 @@ pipeline {
                         [name: 'frontend',     path: 'frontend']
                     ]
 
-                    docker.withRegistry('https://registry.hub.docker.com', REGISTRY_CREDENTIALS) {
+                    // Login to Docker Hub using Jenkins credentials
+                    withCredentials([usernamePassword(
+                        credentialsId: REGISTRY_CREDENTIALS,
+                        usernameVariable: 'DOCKERHUB_USER',
+                        passwordVariable: 'DOCKERHUB_PASS'
+                    )]) {
+                        sh '''
+                            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
+                        '''
 
                         services.each { svc ->
-                            def tag = "${DOCKER_USER}/bookify-${svc.name}:${env.BUILD_NUMBER}"
-                            def latest = "${DOCKER_USER}/bookify-${svc.name}:latest"
+                            def imageTag   = "${DOCKERHUB_USER}/bookify-${svc.name}:${env.BUILD_NUMBER}"
+                            def latestTag  = "${DOCKERHUB_USER}/bookify-${svc.name}:latest"
 
-                            echo "Building image ${tag}"
+                            echo "🔨 Building image ${imageTag} from ${svc.path}"
 
-                            def img = docker.build(tag, "./${svc.path}")
-
-                            echo "Pushing image ${tag}"
-                            img.push()
-
-                            echo "Tagging and pushing latest"
-                            sh "docker tag ${tag} ${latest}"
-                            sh "docker push ${latest}"
+                            sh """
+                                docker build -t ${imageTag} ${svc.path}
+                                docker tag ${imageTag} ${latestTag}
+                                docker push ${imageTag}
+                                docker push ${latestTag}
+                            """
                         }
+
+                        // optional: logout
+                        sh 'docker logout || true'
                     }
                 }
             }
@@ -57,7 +72,7 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    echo "Deploying Bookify to Kubernetes..."
+                    echo "🚀 Deploying Bookify to Kubernetes namespace: ${K8S_NAMESPACE}"
                     sh "kubectl apply -n ${K8S_NAMESPACE} -f k8s/"
                     sh "kubectl get pods -n ${K8S_NAMESPACE}"
                 }
@@ -67,10 +82,10 @@ pipeline {
 
     post {
         success {
-            echo "🎉 Build #${env.BUILD_NUMBER} deployed successfully!"
+            echo "✅ Bookify CI/CD pipeline succeeded for build #${env.BUILD_NUMBER}"
         }
         failure {
-            echo "❌ Build #${env.BUILD_NUMBER} failed."
+            echo "❌ Bookify CI/CD pipeline FAILED for build #${env.BUILD_NUMBER} – check the stages above."
         }
     }
 }
