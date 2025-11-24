@@ -8,26 +8,29 @@ pipeline {
             }
         }
 
-        stage('List project files') {
+        stage('Rebuild Bookify (Docker Compose)') {
             steps {
-                sh 'pwd'
-                sh 'ls -R'
+                sh '''
+                docker compose down
+                docker compose build --no-cache
+                docker compose up -d
+                '''
             }
         }
 
-        stage('Run tests (placeholder)') {
+        stage('Tests (optional)') {
             steps {
-                sh 'echo "Here I would run Bookify tests"'
+                sh 'echo "Tests would run here"'
             }
         }
     }
 
     post {
         success {
-            echo 'Pipeline OK ✅'
+            echo '🚀 Bookify updated successfully!'
         }
         failure {
-            echo 'Pipeline failed ❌'
+            echo '❌ Something went wrong.'
         }
     }
 }
