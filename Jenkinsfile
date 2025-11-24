@@ -2,11 +2,11 @@ pipeline {
     agent any
 
     environment {
-        // Kubernetes namespace where Bookify is running
+        // Set this to the namespace where your Bookify deployments are
         K8S_NAMESPACE = 'bookify'
     }
 
-    // Check GitHub every 2 minutes for new commits on main
+    // Check GitHub every 2 minutes for changes
     triggers {
         pollSCM('H/2 * * * *')
     }
@@ -15,7 +15,8 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                echo "📥 Pulling latest code from GitHub..."
+                echo "📥 Pulling latest code from GitHub via SCM config..."
+                // Uses the repo & branch you configured in the Jenkins job
                 checkout scm
             }
         }
@@ -23,7 +24,7 @@ pipeline {
         stage('Build Docker Images (local only)') {
             steps {
                 script {
-                    // Folders of your microservices (must contain Dockerfile)
+                    // Microservice folders – each must contain a Dockerfile
                     def services = [
                         [name: 'accounts',     path: 'accounts'],
                         [name: 'booking',      path: 'booking'],
@@ -35,6 +36,7 @@ pipeline {
 
                     services.each { svc ->
                         def imageName = "bookify-${svc.name}:latest"
+
                         echo "🔨 Building local image ${imageName} from ./${svc.path}"
 
                         sh """
