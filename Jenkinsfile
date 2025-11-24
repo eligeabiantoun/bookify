@@ -1,28 +1,36 @@
 pipeline {
     agent any
 
+    // 🔁 Poll GitHub every 2 minutes (like the tutorial)
+    triggers {
+        pollSCM('H/2 * * * *')
+    }
+
+    environment {
+        // So kubectl can see your config
+        KUBECONFIG = "${HOME}/.kube/config"
+    }
+
     stages {
 
         stage('Checkout') {
             steps {
+                // OPTION A (recommended if job is "Pipeline script from SCM"):
                 checkout scm
+
+                // OPTION B (if you are using "Pipeline script" and not SCM):
+                // git branch: 'main', url: 'YOUR_GITHUB_URL'
             }
         }
 
-        stage('Use Minikube Docker') {
+        stage('Build in Minikube Docker') {
             steps {
                 sh '''
-                  echo "Switching Docker to Minikube..."
+                  echo "==== Switch Docker to Minikube ===="
                   eval $(minikube docker-env)
                   docker info > /dev/null
-                '''
-            }
-        }
 
-        stage('Build Docker images for services') {
-            steps {
-                sh '''
-                  echo "Building Bookify service images..."
+                  echo "==== Build Bookify images ===="
 
                   # FRONTEND
                   docker build -f frontend_service/Dockerfile -t bookify-frontend-service:latest frontend_service
@@ -45,13 +53,13 @@ pipeline {
             }
         }
 
-        stage('Deploy to Kubernetes') {
+        stage('Deploy to Minikube') {
             steps {
                 sh '''
-                  echo "Applying Kubernetes manifests..."
+                  echo "==== Apply Kubernetes manifests ===="
                   kubectl apply -f k8s/
 
-                  echo "Waiting for deployments to roll out..."
+                  echo "==== Wait for rollouts ===="
                   kubectl rollout status deployment/frontend-deployment -n bookify
                   kubectl rollout status deployment/accounts-deployment -n bookify
                   kubectl rollout status deployment/booking-deployment -n bookify
