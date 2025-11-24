@@ -2,17 +2,11 @@ pipeline {
     agent any
 
     environment {
-        // Your Docker Hub username
-        DOCKER_USER = 'eligeabiantoun'
-
-        // EXACT Jenkins credentials ID you gave me
-        REGISTRY_CREDENTIALS = '59f3eecc-8523-4749-8d42-64879ca4c0e9'
-
-        // Your Kubernetes namespace
+        // Kubernetes namespace where Bookify is running
         K8S_NAMESPACE = 'bookify'
     }
 
-    // Check GitHub every 2 minutes (like your tutorial)
+    // Check GitHub every 2 minutes for new commits on main
     triggers {
         pollSCM('H/2 * * * *')
     }
@@ -21,15 +15,15 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                echo "Pulling latest code from GitHub..."
+                echo "📥 Pulling latest code from GitHub..."
                 checkout scm
             }
         }
 
-        stage('Build & Push Docker Images') {
+        stage('Build Docker Images (local only)') {
             steps {
                 script {
-                    // Your microservice folders
+                    // Folders of your microservices (must contain Dockerfile)
                     def services = [
                         [name: 'accounts',     path: 'accounts'],
                         [name: 'booking',      path: 'booking'],
@@ -39,33 +33,13 @@ pipeline {
                         [name: 'frontend',     path: 'frontend']
                     ]
 
-                    // Login to Docker Hub using your Jenkins credentials
-                    withCredentials([usernamePassword(
-                        credentialsId: REGISTRY_CREDENTIALS,
-                        usernameVariable: 'DOCKERHUB_USER',
-                        passwordVariable: 'DOCKERHUB_PASS'
-                    )]) {
+                    services.each { svc ->
+                        def imageName = "bookify-${svc.name}:latest"
+                        echo "🔨 Building local image ${imageName} from ./${svc.path}"
 
-                        sh '''
-                            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
-                        '''
-
-                        services.each { svc ->
-                            def imageTag  = "${DOCKERHUB_USER}/bookify-${svc.name}:${env.BUILD_NUMBER}"
-                            def latestTag = "${DOCKERHUB_USER}/bookify-${svc.name}:latest"
-
-                            echo "🔨 Building image ${imageTag} from ${svc.path}"
-
-                            sh """
-                                docker build -t ${imageTag} ${svc.path}
-                                docker tag ${imageTag} ${latestTag}
-                                docker push ${imageTag}
-                                docker push ${latestTag}
-                            """
-                        }
-
-                        // optional: logout
-                        sh 'docker logout || true'
+                        sh """
+                            docker build -t ${imageName} ${svc.path}
+                        """
                     }
                 }
             }
@@ -74,9 +48,10 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    echo "🚀 Deploying Bookify to Kubernetes namespace: ${K8S_NAMESPACE}"
-                    // Your manifests folder
+                    echo "🚀 Applying Kubernetes manifests in namespace: ${K8S_NAMESPACE}"
                     sh "kubectl apply -n ${K8S_NAMESPACE} -f k8s/"
+
+                    echo "📊 Current pods:"
                     sh "kubectl get pods -n ${K8S_NAMESPACE}"
                 }
             }
@@ -85,10 +60,10 @@ pipeline {
 
     post {
         success {
-            echo "✅ Bookify CI/CD pipeline succeeded for build #${env.BUILD_NUMBER}"
+            echo "✅ Bookify pipeline succeeded for build #${env.BUILD_NUMBER}"
         }
         failure {
-            echo "❌ Bookify CI/CD pipeline FAILED for build #${env.BUILD_NUMBER} – check the stages above."
+            echo "❌ Bookify pipeline FAILED for build #${env.BUILD_NUMBER} – check the logs above."
         }
     }
 }
