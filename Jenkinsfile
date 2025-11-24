@@ -32,23 +32,12 @@ pipeline {
 
                   echo "==== Build Bookify images ===="
 
-                  # FRONTEND
-                  docker build -f frontend_service/Dockerfile -t bookify-frontend-service:latest frontend_service
-
-                  # ACCOUNTS
-                  docker build -f accounts_service/Dockerfile -t bookify-accounts-service:latest accounts_service
-
-                  # BOOKING
-                  docker build -f booking_service/Dockerfile -t bookify-booking-service:latest booking_service
-
-                  # RESTAURANTS
-                  docker build -f restaurants_service/Dockerfile -t bookify-restaurants-service:latest restaurants_service
-
-                  # REVIEWS
-                  docker build -f reviews_service/Dockerfile -t bookify-reviews-service:latest reviews_service
-
-                  # SEARCH
-                  docker build -f search_service/Dockerfile -t bookify-search-service:latest search_service
+                 docker build -f frontend_service/Dockerfile -t bookify-frontend-service:latest .
+                 docker build -f accounts_service/Dockerfile -t bookify-accounts-service:latest .
+                 docker build -f booking_service/Dockerfile -t bookify-booking-service:latest .
+                 docker build -f restaurants_service/Dockerfile -t bookify-restaurants-service:latest .
+                 docker build -f reviews_service/Dockerfile -t bookify-reviews-service:latest .
+                 docker build -f search_service/Dockerfile -t bookify-search-service:latest .
                 '''
             }
         }
