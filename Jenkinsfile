@@ -2,17 +2,17 @@ pipeline {
     agent any
 
     environment {
-        // 🔁 CHANGE THIS to your real Docker Hub username
-        DOCKER_USER = 'YOUR_DOCKERHUB_USERNAME'
+        // Your Docker Hub username
+        DOCKER_USER = 'eligeabiantoun'
 
-        // ID of Docker Hub credentials in Jenkins (Username+Password)
-        REGISTRY_CREDENTIALS = 'dockerhub'
+        // EXACT Jenkins credentials ID you gave me
+        REGISTRY_CREDENTIALS = '59f3eecc-8523-4749-8d42-64879ca4c0e9'
 
-        // Kubernetes namespace
+        // Your Kubernetes namespace
         K8S_NAMESPACE = 'bookify'
     }
 
-    // Same as the tutorial: poll Git every 2 minutes
+    // Check GitHub every 2 minutes (like your tutorial)
     triggers {
         pollSCM('H/2 * * * *')
     }
@@ -29,6 +29,7 @@ pipeline {
         stage('Build & Push Docker Images') {
             steps {
                 script {
+                    // Your microservice folders
                     def services = [
                         [name: 'accounts',     path: 'accounts'],
                         [name: 'booking',      path: 'booking'],
@@ -38,19 +39,20 @@ pipeline {
                         [name: 'frontend',     path: 'frontend']
                     ]
 
-                    // Login to Docker Hub using Jenkins credentials
+                    // Login to Docker Hub using your Jenkins credentials
                     withCredentials([usernamePassword(
                         credentialsId: REGISTRY_CREDENTIALS,
                         usernameVariable: 'DOCKERHUB_USER',
                         passwordVariable: 'DOCKERHUB_PASS'
                     )]) {
+
                         sh '''
                             echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
                         '''
 
                         services.each { svc ->
-                            def imageTag   = "${DOCKERHUB_USER}/bookify-${svc.name}:${env.BUILD_NUMBER}"
-                            def latestTag  = "${DOCKERHUB_USER}/bookify-${svc.name}:latest"
+                            def imageTag  = "${DOCKERHUB_USER}/bookify-${svc.name}:${env.BUILD_NUMBER}"
+                            def latestTag = "${DOCKERHUB_USER}/bookify-${svc.name}:latest"
 
                             echo "🔨 Building image ${imageTag} from ${svc.path}"
 
@@ -73,6 +75,7 @@ pipeline {
             steps {
                 script {
                     echo "🚀 Deploying Bookify to Kubernetes namespace: ${K8S_NAMESPACE}"
+                    // Your manifests folder
                     sh "kubectl apply -n ${K8S_NAMESPACE} -f k8s/"
                     sh "kubectl get pods -n ${K8S_NAMESPACE}"
                 }
