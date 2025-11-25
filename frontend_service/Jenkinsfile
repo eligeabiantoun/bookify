@@ -1,55 +1,94 @@
 pipeline {
     agent any
 
-    // check GitHub every 2 minutes
-    triggers {
-        pollSCM('H/2 * * * *')
+    parameters {
+        booleanParam(name: 'RUN_TESTS', defaultValue: false, description: 'Run tests (frontend usually has none).')
+        booleanParam(name: 'PUSH_IMAGE', defaultValue: false, description: 'Push image to registry (Bookify uses local images).')
+        booleanParam(name: 'DEPLOY_TO_MINIKUBE', defaultValue: true, description: 'Deploy the frontend to Minikube.')
+        string(name: 'K8S_NAMESPACE', defaultValue: 'bookify', description: 'Namespace to deploy to.')
+    }
+
+    options {
+        timestamps()
+        disableConcurrentBuilds()
     }
 
     environment {
-        DOCKER_HOST = "unix:///var/run/docker.sock"
-        KUBECONFIG  = "${WORKSPACE}/kubeconfig-minikube"
+        SERVICE_NAME      = "frontend-service"
+        SERVICE_PATH      = "frontend_service"
+        IMAGE_LATEST      = "bookify-frontend-service:latest"
+        DEPLOYMENT_YAML   = "k8s/frontend-deployment.yaml"
+        DEPLOYMENT_NAME   = "frontend-deployment"
+        KUBECONFIG        = "${WORKSPACE}/kubeconfig-minikube"
+        IS_WINDOWS        = "${env.OS?.contains('Windows') ? 'true' : 'false'}"
     }
 
     stages {
+
         stage('Checkout') {
             steps {
-                // uses the repo configured in the Jenkins job
                 checkout scm
             }
         }
 
-        stage('Build frontend image') {
-            when {
-                // only run if something under frontend_service changed
-                changeset "frontend_service/**"
-            }
+        stage('Run Tests') {
+            when { expression { return params.RUN_TESTS } }
             steps {
-                sh '''
-                    set -e
-                    echo ">>> Building frontend image"
-                    docker build -f frontend_service/Dockerfile \
-                        -t bookify-frontend-service:latest .
-                    docker images | grep bookify-frontend-service || true
-                '''
+                echo "No test folder for frontend — skipping."
             }
         }
 
-        stage('Deploy frontend to Minikube') {
-            when {
-                changeset "frontend_service/**"
-            }
+        stage('Docker build') {
             steps {
-                sh '''
-                    set -e
-                    echo ">>> Applying frontend k8s manifest"
-                    kubectl apply -f k8s/frontend-deployment.yaml
-
-                    echo ">>> Waiting for rollout"
-                    kubectl rollout status deployment/frontend-deployment -n bookify || \
-                    kubectl rollout status deployment/frontend-deployment
-                '''
+                script {
+                    if (env.IS_WINDOWS == 'true') {
+                        bat """
+                            docker build -f ${SERVICE_PATH}/Dockerfile -t ${IMAGE_LATEST} .
+                        """
+                    } else {
+                        sh """
+                            set -e
+                            echo ">>> Building Docker image for ${SERVICE_NAME}"
+                            docker build -f ${SERVICE_PATH}/Dockerfile -t ${IMAGE_LATEST} .
+                        """
+                    }
+                }
             }
+        }
+
+        stage('Push image') {
+            when { expression { return params.PUSH_IMAGE } }
+            steps {
+                error("Bookify does not use Docker registry pushes. Disable PUSH_IMAGE.")
+            }
+        }
+
+        stage('Deploy to Minikube') {
+            when { expression { return params.DEPLOY_TO_MINIKUBE } }
+            steps {
+                script {
+                    echo ">>> Deploying frontend to Minikube..."
+                    sh """
+                        set -e
+
+                        echo "Applying deployment YAML..."
+                        kubectl apply -f ${DEPLOYMENT_YAML}
+
+                        echo "Restarting deployment..."
+                        kubectl rollout restart deployment/${DEPLOYMENT_NAME} -n ${params.K8S_NAMESPACE}
+
+                        echo "Waiting for rollout to complete..."
+                        kubectl rollout status deployment/${DEPLOYMENT_NAME} -n ${params.K8S_NAMESPACE} --timeout=180s
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo "Cleaning workspace..."
+            cleanWs()
         }
     }
 }
