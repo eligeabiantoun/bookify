@@ -2,10 +2,10 @@ pipeline {
     agent any
 
     parameters {
-        booleanParam(name: 'RUN_TESTS', defaultValue: false, description: 'Run tests (frontend usually has none).')
-        booleanParam(name: 'PUSH_IMAGE', defaultValue: false, description: 'Push image to registry (Bookify uses local images).')
+        booleanParam(name: 'RUN_TESTS', defaultValue: false, description: 'Run tests (if you add them later).')
+        booleanParam(name: 'PUSH_IMAGE', defaultValue: false, description: 'Push image to registry (not used for local Minikube).')
         booleanParam(name: 'DEPLOY_TO_MINIKUBE', defaultValue: true, description: 'Deploy the frontend to Minikube.')
-        string(name: 'K8S_NAMESPACE', defaultValue: 'bookify', description: 'Namespace to deploy to.')
+        string(name: 'K8S_NAMESPACE', defaultValue: 'bookify', description: 'Kubernetes namespace to target when deploying.')
     }
 
     options {
@@ -14,52 +14,44 @@ pipeline {
     }
 
     environment {
-        SERVICE_NAME      = "frontend-service"
-        SERVICE_PATH      = "frontend_service"
-        IMAGE_LATEST      = "bookify-frontend-service:latest"
-        DEPLOYMENT_YAML   = "k8s/frontend-deployment.yaml"
-        DEPLOYMENT_NAME   = "frontend-deployment"
-        KUBECONFIG        = "${WORKSPACE}/kubeconfig-minikube"
-        IS_WINDOWS        = "${env.OS?.contains('Windows') ? 'true' : 'false'}"
+        SERVICE_NAME    = 'frontend-service'
+        SERVICE_PATH    = 'frontend_service'
+        IMAGE_LATEST    = 'bookify-frontend-service:latest'
+        DEPLOYMENT_YAML = 'k8s/frontend-deployment.yaml'
+        DEPLOYMENT_NAME = 'frontend-deployment'
+        // KUBECONFIG file is committed at repo root
+        KUBECONFIG      = "${WORKSPACE}/kubeconfig-minikube"
     }
 
     stages {
-
         stage('Checkout') {
             steps {
                 checkout scm
             }
         }
 
-        stage('Run Tests') {
+        stage('Run tests') {
             when { expression { return params.RUN_TESTS } }
             steps {
-                echo "No test folder for frontend — skipping."
+                echo "No tests configured for ${env.SERVICE_NAME}; skipping."
             }
         }
 
         stage('Docker build') {
             steps {
-                script {
-                    if (env.IS_WINDOWS == 'true') {
-                        bat """
-                            docker build -f ${SERVICE_PATH}/Dockerfile -t ${IMAGE_LATEST} .
-                        """
-                    } else {
-                        sh """
-                            set -e
-                            echo ">>> Building Docker image for ${SERVICE_NAME}"
-                            docker build -f ${SERVICE_PATH}/Dockerfile -t ${IMAGE_LATEST} .
-                        """
-                    }
-                }
+                sh '''
+                    set -e
+                    echo ">>> Building Docker image for ${SERVICE_NAME}"
+                    docker build -f ${SERVICE_PATH}/Dockerfile -t ${IMAGE_LATEST} .
+                    docker images | grep bookify-frontend-service || true
+                '''
             }
         }
 
         stage('Push image') {
             when { expression { return params.PUSH_IMAGE } }
             steps {
-                error("Bookify does not use Docker registry pushes. Disable PUSH_IMAGE.")
+                error "PUSH_IMAGE=true is not supported for Bookify (we use local Minikube images only)."
             }
         }
 
@@ -67,18 +59,17 @@ pipeline {
             when { expression { return params.DEPLOY_TO_MINIKUBE } }
             steps {
                 script {
-                    echo ">>> Deploying frontend to Minikube..."
+                    def ns = params.K8S_NAMESPACE ?: 'bookify'
                     sh """
                         set -e
-
-                        echo "Applying deployment YAML..."
+                        echo ">>> Applying ${DEPLOYMENT_YAML}..."
                         kubectl apply -f ${DEPLOYMENT_YAML}
 
-                        echo "Restarting deployment..."
-                        kubectl rollout restart deployment/${DEPLOYMENT_NAME} -n ${params.K8S_NAMESPACE}
+                        echo ">>> Restarting deployment/${DEPLOYMENT_NAME} in namespace ${ns}..."
+                        kubectl -n ${ns} rollout restart deployment/${DEPLOYMENT_NAME}
 
-                        echo "Waiting for rollout to complete..."
-                        kubectl rollout status deployment/${DEPLOYMENT_NAME} -n ${params.K8S_NAMESPACE} --timeout=180s
+                        echo ">>> Waiting for rollout to complete..."
+                        kubectl -n ${ns} rollout status deployment/${DEPLOYMENT_NAME} --timeout=180s
                     """
                 }
             }
