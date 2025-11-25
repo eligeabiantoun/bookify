@@ -33,26 +33,15 @@ pipeline {
         }
 
         stage('Deploy to Kubernetes') {
-            steps {
-                sh '''
-                    echo ">>> Using Jenkins kubeconfig"
-                    export KUBECONFIG="$WORKSPACE/k8s/jenkins-kubeconfig"
+    steps {
+        sh '''
+            echo ">>> Using Jenkins kubeconfig"
+            export KUBECONFIG=$WORKSPACE/k8s/jenkins-kubeconfig
 
-                    echo ">>> Applying Kubernetes manifests"
-                    kubectl apply --validate=false -f k8s/ -n bookify
-
-                    echo ">>> Restarting deployments"
-                    kubectl rollout restart deployment/accounts-deployment      -n bookify
-                    kubectl rollout restart deployment/booking-deployment       -n bookify
-                    kubectl rollout restart deployment/restaurants-deployment   -n bookify
-                    kubectl rollout restart deployment/reviews-deployment       -n bookify
-                    kubectl rollout restart deployment/search-deployment        -n bookify
-                    kubectl rollout restart deployment/frontend-deployment      -n bookify
-
-                    echo ">>> Current pods:"
-                    kubectl get pods -n bookify
-                '''
-            }
-        }
+            echo ">>> Applying Kubernetes manifests"
+            kubectl apply --validate=false -f k8s/ -n bookify
+        '''
+    }
+}
     }
 }
