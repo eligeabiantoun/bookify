@@ -12,14 +12,14 @@ pipeline {
         stage('Build Docker images') {
             steps {
                 sh '''
-                    echo ">>> Building Bookify images (local Docker, no Docker Hub)"
+                    echo ">>> Building Bookify images"
 
-                    docker build -f frontend_service/Dockerfile    -t bookify-frontend-service:latest .
-                    docker build -f accounts_service/Dockerfile    -t bookify-accounts-service:latest .
-                    docker build -f booking_service/Dockerfile     -t bookify-booking-service:latest .
-                    docker build -f restaurants_service/Dockerfile -t bookify-restaurants-service:latest .
-                    docker build -f reviews_service/Dockerfile     -t bookify-reviews-service:latest .
-                    docker build -f search_service/Dockerfile      -t bookify-search-service:latest .
+                    docker build frontend_service/          -t bookify-frontend-service:latest
+                    docker build accounts_service/          -t bookify-accounts-service:latest
+                    docker build booking_service/           -t bookify-booking-service:latest
+                    docker build restaurants_service/       -t bookify-restaurants-service:latest
+                    docker build reviews_service/           -t bookify-reviews-service:latest
+                    docker build search_service/            -t bookify-search-service:latest
                 '''
             }
         }
@@ -28,6 +28,7 @@ pipeline {
             steps {
                 sh '''
                     echo ">>> Applying Kubernetes manifests"
+
                     kubectl apply -f k8s/ -n bookify
 
                     echo ">>> Restarting deployments"
