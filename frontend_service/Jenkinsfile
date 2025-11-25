@@ -1,85 +1,53 @@
 pipeline {
     agent any
 
-    parameters {
-        booleanParam(name: 'RUN_TESTS', defaultValue: false, description: 'Run tests (if you add them later).')
-        booleanParam(name: 'PUSH_IMAGE', defaultValue: false, description: 'Push image to registry (not used for local Minikube).')
-        booleanParam(name: 'DEPLOY_TO_MINIKUBE', defaultValue: true, description: 'Deploy the frontend to Minikube.')
-        string(name: 'K8S_NAMESPACE', defaultValue: 'bookify', description: 'Kubernetes namespace to target when deploying.')
-    }
-
-    options {
-        timestamps()
-        disableConcurrentBuilds()
+    // 🔁 Poll GitHub every 2 minutes
+    triggers {
+        pollSCM('H/2 * * * *')
     }
 
     environment {
-        SERVICE_NAME    = 'frontend-service'
-        SERVICE_PATH    = 'frontend_service'
-        IMAGE_LATEST    = 'bookify-frontend-service:latest'
-        DEPLOYMENT_YAML = 'k8s/frontend-deployment.yaml'
-        DEPLOYMENT_NAME = 'frontend-deployment'
-        // KUBECONFIG file is committed at repo root
-        KUBECONFIG      = "${WORKSPACE}/kubeconfig-minikube"
+        // use the kubeconfig you committed at the repo root
+        KUBECONFIG = "${WORKSPACE}/kubeconfig-minikube"
     }
 
     stages {
+
         stage('Checkout') {
             steps {
-                checkout scm
+                // same idea as the tutorial, but for your repo
+                git branch: 'main', url: 'https://github.com/eligeabiantoun/bookify.git'
             }
         }
 
-        stage('Run tests') {
-            when { expression { return params.RUN_TESTS } }
-            steps {
-                echo "No tests configured for ${env.SERVICE_NAME}; skipping."
-            }
-        }
-
-        stage('Docker build') {
+        stage('Build in Minikube Docker') {
             steps {
                 sh '''
                     set -e
-                    echo ">>> Building Docker image for ${SERVICE_NAME}"
-                    docker build -f ${SERVICE_PATH}/Dockerfile -t ${IMAGE_LATEST} .
-                    docker images | grep bookify-frontend-service || true
+
+                    echo ">>> Building frontend image inside Docker"
+                    # If needed, you *can* switch to Minikube's Docker with:
+                    # eval $(minikube docker-env)
+
+                    docker build \
+                      -f frontend_service/Dockerfile \
+                      -t bookify-frontend-service:latest \
+                      .
                 '''
             }
         }
 
-        stage('Push image') {
-            when { expression { return params.PUSH_IMAGE } }
-            steps {
-                error "PUSH_IMAGE=true is not supported for Bookify (we use local Minikube images only)."
-            }
-        }
-
         stage('Deploy to Minikube') {
-            when { expression { return params.DEPLOY_TO_MINIKUBE } }
             steps {
-                script {
-                    def ns = params.K8S_NAMESPACE ?: 'bookify'
-                    sh """
-                        set -e
-                        echo ">>> Applying ${DEPLOYMENT_YAML}..."
-                        kubectl apply -f ${DEPLOYMENT_YAML}
+                sh '''
+                    set -e
+                    echo ">>> Applying frontend deployment manifest..."
+                    kubectl apply -f k8s/frontend-deployment.yaml
 
-                        echo ">>> Restarting deployment/${DEPLOYMENT_NAME} in namespace ${ns}..."
-                        kubectl -n ${ns} rollout restart deployment/${DEPLOYMENT_NAME}
-
-                        echo ">>> Waiting for rollout to complete..."
-                        kubectl -n ${ns} rollout status deployment/${DEPLOYMENT_NAME} --timeout=180s
-                    """
-                }
+                    echo ">>> Waiting for rollout of frontend-deployment in namespace bookify..."
+                    kubectl rollout status deployment/frontend-deployment -n bookify --timeout=180s
+                '''
             }
-        }
-    }
-
-    post {
-        always {
-            echo "Cleaning workspace..."
-            cleanWs()
         }
     }
 }
