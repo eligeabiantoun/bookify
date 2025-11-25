@@ -1,0 +1,55 @@
+pipeline {
+    agent any
+
+    // check GitHub every 2 minutes
+    triggers {
+        pollSCM('H/2 * * * *')
+    }
+
+    environment {
+        DOCKER_HOST = "unix:///var/run/docker.sock"
+        KUBECONFIG  = "${WORKSPACE}/kubeconfig-minikube"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // uses the repo configured in the Jenkins job
+                checkout scm
+            }
+        }
+
+        stage('Build frontend image') {
+            when {
+                // only run if something under frontend_service changed
+                changeset "frontend_service/**"
+            }
+            steps {
+                sh '''
+                    set -e
+                    echo ">>> Building frontend image"
+                    docker build -f frontend_service/Dockerfile \
+                        -t bookify-frontend-service:latest .
+                    docker images | grep bookify-frontend-service || true
+                '''
+            }
+        }
+
+        stage('Deploy frontend to Minikube') {
+            when {
+                changeset "frontend_service/**"
+            }
+            steps {
+                sh '''
+                    set -e
+                    echo ">>> Applying frontend k8s manifest"
+                    kubectl apply -f k8s/frontend-deployment.yaml
+
+                    echo ">>> Waiting for rollout"
+                    kubectl rollout status deployment/frontend-deployment -n bookify || \
+                    kubectl rollout status deployment/frontend-deployment
+                '''
+            }
+        }
+    }
+}

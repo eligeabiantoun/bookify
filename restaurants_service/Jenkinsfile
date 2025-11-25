@@ -1,0 +1,39 @@
+pipeline {
+    agent any
+    triggers { pollSCM('H/2 * * * *') }
+    environment {
+        DOCKER_HOST = "unix:///var/run/docker.sock"
+        KUBECONFIG  = "${WORKSPACE}/kubeconfig-minikube"
+    }
+    stages {
+        stage('Checkout') { steps { checkout scm } }
+
+        stage('Build restaurants image') {
+            when { changeset "restaurants_service/**" }
+            steps {
+                sh '''
+                    set -e
+                    echo ">>> Building restaurants image"
+                    docker build -f restaurants_service/Dockerfile \
+                        -t bookify-restaurants-service:latest .
+                    docker images | grep bookify-restaurants-service || true
+                '''
+            }
+        }
+
+        stage('Deploy restaurants to Minikube') {
+            when { changeset "restaurants_service/**" }
+            steps {
+                sh '''
+                    set -e
+                    echo ">>> Applying restaurants k8s manifest"
+                    kubectl apply -f k8s/restaurants-deployment.yaml
+
+                    echo ">>> Waiting for rollout"
+                    kubectl rollout status deployment/restaurants-deployment -n bookify || \
+                    kubectl rollout status deployment/restaurants-deployment
+                '''
+            }
+        }
+    }
+}

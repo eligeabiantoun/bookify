@@ -1,0 +1,39 @@
+pipeline {
+    agent any
+    triggers { pollSCM('H/2 * * * *') }
+    environment {
+        DOCKER_HOST = "unix:///var/run/docker.sock"
+        KUBECONFIG  = "${WORKSPACE}/kubeconfig-minikube"
+    }
+    stages {
+        stage('Checkout') { steps { checkout scm } }
+
+        stage('Build booking image') {
+            when { changeset "booking_service/**" }
+            steps {
+                sh '''
+                    set -e
+                    echo ">>> Building booking image"
+                    docker build -f booking_service/Dockerfile \
+                        -t bookify-booking-service:latest .
+                    docker images | grep bookify-booking-service || true
+                '''
+            }
+        }
+
+        stage('Deploy booking to Minikube') {
+            when { changeset "booking_service/**" }
+            steps {
+                sh '''
+                    set -e
+                    echo ">>> Applying booking k8s manifest"
+                    kubectl apply -f k8s/booking-deployment.yaml
+
+                    echo ">>> Waiting for rollout"
+                    kubectl rollout status deployment/booking-deployment -n bookify || \
+                    kubectl rollout status deployment/booking-deployment
+                '''
+            }
+        }
+    }
+}

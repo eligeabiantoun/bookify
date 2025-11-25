@@ -1,0 +1,46 @@
+pipeline {
+    agent any
+
+    triggers {
+        pollSCM('H/2 * * * *')
+    }
+
+    environment {
+        DOCKER_HOST = "unix:///var/run/docker.sock"
+        KUBECONFIG  = "${WORKSPACE}/kubeconfig-minikube"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps { checkout scm }
+        }
+
+        stage('Build accounts image') {
+            when { changeset "accounts_service/**" }
+            steps {
+                sh '''
+                    set -e
+                    echo ">>> Building accounts image"
+                    docker build -f accounts_service/Dockerfile \
+                        -t bookify-accounts-service:latest .
+                    docker images | grep bookify-accounts-service || true
+                '''
+            }
+        }
+
+        stage('Deploy accounts to Minikube') {
+            when { changeset "accounts_service/**" }
+            steps {
+                sh '''
+                    set -e
+                    echo ">>> Applying accounts k8s manifest"
+                    kubectl apply -f k8s/accounts-deployment.yaml
+
+                    echo ">>> Waiting for rollout"
+                    kubectl rollout status deployment/accounts-deployment -n bookify || \
+                    kubectl rollout status deployment/accounts-deployment
+                '''
+            }
+        }
+    }
+}

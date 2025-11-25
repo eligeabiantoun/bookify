@@ -1,0 +1,39 @@
+pipeline {
+    agent any
+    triggers { pollSCM('H/2 * * * *') }
+    environment {
+        DOCKER_HOST = "unix:///var/run/docker.sock"
+        KUBECONFIG  = "${WORKSPACE}/kubeconfig-minikube"
+    }
+    stages {
+        stage('Checkout') { steps { checkout scm } }
+
+        stage('Build search image') {
+            when { changeset "search_service/**" }
+            steps {
+                sh '''
+                    set -e
+                    echo ">>> Building search image"
+                    docker build -f search_service/Dockerfile \
+                        -t bookify-search-service:latest .
+                    docker images | grep bookify-search-service || true
+                '''
+            }
+        }
+
+        stage('Deploy search to Minikube') {
+            when { changeset "search_service/**" }
+            steps {
+                sh '''
+                    set -e
+                    echo ">>> Applying search k8s manifest"
+                    kubectl apply -f k8s/search-deployment.yaml
+
+                    echo ">>> Waiting for rollout"
+                    kubectl rollout status deployment/search-deployment -n bookify || \
+                    kubectl rollout status deployment/search-deployment
+                '''
+            }
+        }
+    }
+}
