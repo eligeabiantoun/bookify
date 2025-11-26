@@ -1,19 +1,12 @@
 pipeline {
     agent any
-
-    triggers {
-        pollSCM('H/2 * * * *')
-    }
-
+    triggers { pollSCM('H/2 * * * *') }
     environment {
         DOCKER_HOST = "unix:///var/run/docker.sock"
         KUBECONFIG  = "${WORKSPACE}/kubeconfig-minikube"
     }
-
     stages {
-        stage('Checkout') {
-            steps { checkout scm }
-        }
+        stage('Checkout') { steps { checkout scm } }
 
         stage('Build accounts image') {
             when { changeset "accounts_service/**" }
