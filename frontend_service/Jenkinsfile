@@ -1,63 +1,39 @@
 pipeline {
     agent any
-
-    // 🔁 Poll GitHub every 2 minutes
-    triggers {
-        pollSCM('H/2 * * * *')
-    }
-
+    triggers { pollSCM('H/2 * * * *') }
     environment {
-        // use the kubeconfig you committed at the repo root
-        KUBECONFIG = "${WORKSPACE}/kubeconfig-minikube"
+        DOCKER_HOST = "unix:///var/run/docker.sock"
+        KUBECONFIG  = "${WORKSPACE}/kubeconfig-minikube"
     }
-
     stages {
+        stage('Checkout') { steps { checkout scm } }
 
-        stage('Checkout') {
-            steps {
-                // same idea as the tutorial, but for your repo
-                git branch: 'main', url: 'https://github.com/eligeabiantoun/bookify.git'
-            }
-        }
-
-        stage('Build in Minikube Docker') {
+        stage('Build frontend image') {
+            when { changeset "frontend_service/**" }
             steps {
                 sh '''
                     set -e
-
-                    echo ">>> Building frontend image inside Docker"
-                    # If needed, you *can* switch to Minikube's Docker with:
-                    # eval $(minikube docker-env)
-
-                    docker build \
-                      -f frontend_service/Dockerfile \
-                      -t bookify-frontend-service:latest \
-                      .
+                    echo ">>> Building frontend image"
+                    docker build -f frontend_service/Dockerfile \
+                        -t bookify-frontend-service:latest .
+                    docker images | grep bookify-frontend-service || true
                 '''
             }
         }
 
-        stage('Deploy to Minikube') {
-    steps {
-        sh '''
-            set -e
-            echo ">>> KUBECONFIG is: $KUBECONFIG"
+        stage('Deploy frontend to Minikube') {
+            when { changeset "frontend_service/**" }
+            steps {
+                sh '''
+                    set -e
+                    echo ">>> Applying frontend k8s manifest"
+                    kubectl apply -f k8s/frontend-deployment.yaml
 
-            echo ">>> First lines of kubeconfig:"
-            if [ -f "$KUBECONFIG" ]; then
-              sed -n '1,20p' "$KUBECONFIG"
-            else
-              echo "!!! kubeconfig file not found at $KUBECONFIG"
-            fi
-
-            echo ">>> Applying frontend deployment manifest..."
-            kubectl apply --validate=false -f k8s/frontend-deployment.yaml
-
-            echo ">>> Waiting for rollout of frontend-deployment in namespace bookify..."
-            kubectl rollout status deployment/frontend-deployment -n bookify --timeout=180s
-        '''
-    }
-}
-
+                    echo ">>> Waiting for rollout"
+                    kubectl rollout status deployment/frontend-deployment -n bookify || \
+                    kubectl rollout status deployment/frontend-deployment
+                '''
+            }
+        }
     }
 }
