@@ -1,21 +1,39 @@
-FROM python:3.12-slim
+pipeline {
+    agent any
+    triggers { pollSCM('H/2 * * * *') }
+    environment {
+        DOCKER_HOST = "unix:///var/run/docker.sock"
+        KUBECONFIG  = "${WORKSPACE}/kubeconfig-minikube"
+    }
+    stages {
+        stage('Checkout') { steps { checkout scm } }
 
-WORKDIR /app
+        stage('Build reviews image') {
+            when { changeset "reviews_service/**" }
+            steps {
+                sh '''
+                    set -e
+                    echo ">>> Building reviews image"
+                    docker build -f reviews_service/Dockerfile \
+                        -t bookify-reviews-service:latest .
+                    docker images | grep bookify-reviews-service || true
+                '''
+            }
+        }
 
-# System deps (optional but fine)
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    libpq-dev \
- && rm -rf /var/lib/apt/lists/*
+        stage('Deploy search to Minikube') {
+            when { changeset "reviews_service/**" }
+            steps {
+                sh '''
+                    set -e
+                    echo ">>> Applying search k8s manifest"
+                    kubectl apply -f k8s/reviews-deployment.yaml
 
-# Copy root requirements and install
-COPY requirements.txt .
-
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy the WHOLE project (including manage.py, apps, etc.)
-COPY . .
-
-EXPOSE 8000
-
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+                    echo ">>> Waiting for rollout"
+                    kubectl rollout status deployment/reviews-deployment -n bookify || \
+                    kubectl rollout status deployment/reviews-deployment
+                '''
+            }
+        }
+    }
+}
